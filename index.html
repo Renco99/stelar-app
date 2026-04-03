@@ -6,42 +6,46 @@
     <title>STELAR - High Performance</title>
     <style>
         :root { --primary: #3b82f6; --secondary: #f59e0b; --bg: #0f172a; --card: #1e293b; --danger: #ef4444; --success: #10b981; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 100px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
         
-        .header { background: var(--card); padding: 15px; border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        .header { background: var(--card); padding: 15px; border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         .logo { font-weight: 800; letter-spacing: 2px; color: var(--primary); margin: 0; }
         
         /* Marcador */
-        .live-match { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 20px 10px; text-align: center; }
+        .live-match { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 20px 10px; text-align: center; border-bottom: 1px solid #334155; }
         .score-container { display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto; }
-        .score-number { font-size: 3.5rem; font-weight: 900; text-shadow: 0 0 10px var(--primary); }
-        
+        .score-number { font-size: 3.5rem; font-weight: 900; text-shadow: 0 0 10px var(--primary); line-height: 1; }
+        .team-label { font-size: 0.7rem; opacity: 0.6; margin-top: 5px; text-transform: uppercase; }
+
+        /* Botones de Marcador Rápido */
+        .quick-score { display: flex; justify-content: center; gap: 40px; margin-top: 15px; }
+        .btn-add { background: var(--primary); border: none; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
         /* Secciones */
-        .section-title { padding: 15px 15px 5px; font-size: 1.1rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .panel { background: var(--card); margin: 10px; border-radius: 15px; padding: 15px; }
+        .section-title { padding: 20px 15px 10px; font-size: 1rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Jugadores */
-        .player-card { background: #111827; margin-bottom: 10px; padding: 12px; border-radius: 10px; border-left: 4px solid var(--primary); }
-        .player-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
-        .controls-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .stat-group { display: flex; flex-direction: column; align-items: center; background: #1e293b; padding: 5px; border-radius: 8px; }
-        .stat-label { font-size: 0.6rem; text-transform: uppercase; margin-bottom: 4px; opacity: 0.7; }
-        .counter { display: flex; align-items: center; gap: 8px; }
-        
-        /* Botones */
-        .btn-mini { width: 28px; height: 28px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; }
+        /* Tarjetas de Jugadores */
+        .player-card { background: var(--card); margin: 0 15px 12px; padding: 15px; border-radius: 12px; border-left: 5px solid var(--primary); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .player-info { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .player-name { font-weight: 700; font-size: 1rem; }
+        .player-team { font-size: 0.75rem; color: var(--secondary); }
+
+        /* Controles +/- */
+        .controls-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .stat-box { background: #0f172a; padding: 8px; border-radius: 8px; text-align: center; }
+        .stat-label { font-size: 0.6rem; opacity: 0.5; display: block; margin-bottom: 5px; }
+        .counter-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-small { width: 30px; height: 30px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        .btn-minus { background: var(--danger); opacity: 0.8; }
         .btn-plus { background: var(--success); }
-        .btn-minus { background: var(--danger); }
-        .val { font-size: 1rem; font-weight: bold; min-width: 15px; text-align: center; }
+        .stat-val { font-size: 1.1rem; font-weight: 800; min-width: 20px; }
 
         /* Calendario */
-        .event-card { background: #111827; padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); }
-        .event-info { display: flex; flex-direction: column; gap: 2px; }
-        .event-teams { font-weight: bold; font-size: 0.9rem; }
-        .event-date { font-size: 0.75rem; opacity: 0.6; }
-        .badge { background: var(--secondary); font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .event-card { background: var(--card); margin: 0 15px 8px; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); }
+        .event-teams { font-weight: bold; font-size: 0.9rem; display: block; }
+        .event-detail { font-size: 0.7rem; opacity: 0.6; }
 
-        .nav-tabs { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #334155; z-index: 1000; }
+        .nav-tabs { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #334155; }
     </style>
 </head>
 <body>
@@ -51,35 +55,42 @@
     <div id="status">LIVE 🔴</div>
 </div>
 
-<div id="view-live">
-    <div class="live-match">
-        <div class="score-container">
-            <div><div id="scoreA" class="score-number">0</div><small>LOCAL</small></div>
-            <div style="opacity: 0.3;">VS</div>
-            <div><div id="scoreB" class="score-number">0</div><small>VISITA</small></div>
-        </div>
+<div class="live-match">
+    <div class="score-container">
+        <div><div id="scoreA" class="score-number">0</div><div class="team-label">Local</div></div>
+        <div style="font-size: 1.5rem; opacity: 0.3;">VS</div>
+        <div><div id="scoreB" class="score-number">0</div><div class="team-label">Visita</div></div>
     </div>
+    <div class="quick-score">
+        <button class="btn-add" onclick="updateScore('A', 1)">+ LOCAL</button>
+        <button class="btn-add" onclick="updateScore('B', 1)" style="background:var(--secondary)">+ VISITA</button>
+    </div>
+</div>
 
-    <div class="section-title">📊 Planilla de Estadísticas</div>
-    <div class="panel" id="lista-jugadores">Cargando jugadores...</div>
+<div class="section-title">🏃 Planilla de Jugadores</div>
+<div id="lista-jugadores">
+    <p style="text-align:center; opacity:0.5;">Cargando jugadores...</p>
+</div>
 
-    <div class="section-title">📅 Próximos Partidos</div>
-    <div class="panel" id="lista-calendario">Cargando calendario...</div>
+<div class="section-title">📅 Calendario de Partidos</div>
+<div id="lista-calendario">
+    <p style="text-align:center; opacity:0.5;">Cargando calendario...</p>
 </div>
 
 <nav class="nav-tabs">
-    <div class="nav-item active">PARTIDO</div>
-    <div class="nav-item" onclick="alert('Filtros de liga próximamente')">TORNEO</div>
+    <div class="nav-item" onclick="window.scrollTo(0,0)">PARTIDO</div>
     <div class="nav-item" onclick="location.reload()">REFRESCAR</div>
 </nav>
 
 <script>
-    // CONFIGURACIÓN ÚNICA
     const SUPABASE_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
     const PARTIDO_ID = 1;
 
-    // 1. CARGAR JUGADORES
+    let scoreA = 0;
+    let scoreB = 0;
+
+    // 1. CARGAR JUGADORES (Tarjetas con +/-)
     async function cargarJugadores() {
         try {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/jugadores?select=*&order=numero.asc`, {
@@ -94,47 +105,66 @@
                 div.className = 'player-card';
                 div.innerHTML = `
                     <div class="player-info">
-                        <span>#${j.numero} ${j.nombre}</span>
-                        <small style="color:var(--primary)">${j.equipo}</small>
+                        <span class="player-name">#${j.numero} ${j.nombre}</span>
+                        <span class="player-team">${j.equipo}</span>
                     </div>
                     <div class="controls-grid">
-                        ${renderStatControl(j.id, 'goles', j.goles, 'Goles')}
-                        ${renderStatControl(j.id, 'asistencias', j.asistencias, 'Asist')}
-                        ${renderStatControl(j.id, 'defensas', j.defensas, 'Def')}
+                        ${renderStat(j.id, 'goles', j.goles, 'GOL')}
+                        ${renderStat(j.id, 'asistencias', j.asistencias, 'AST')}
+                        ${renderStat(j.id, 'defensas', j.defensas, 'DEF')}
                     </div>
                 `;
                 contenedor.appendChild(div);
             });
-        } catch (e) { console.error("Error jugadores:", e); }
+        } catch (e) { console.error(e); }
     }
 
-    function renderStatControl(id, campo, valor, label) {
+    function renderStat(id, campo, valor, label) {
         return `
-            <div class="stat-group">
+            <div class="stat-box">
                 <span class="stat-label">${label}</span>
-                <div class="counter">
-                    <button class="btn-mini btn-minus" onclick="modificarStat(${id}, '${campo}', ${valor - 1})">-</button>
-                    <span class="val">${valor}</span>
-                    <button class="btn-mini btn-plus" onclick="modificarStat(${id}, '${campo}', ${valor + 1})">+</button>
+                <div class="counter-row">
+                    <button class="btn-small btn-minus" onclick="modificarStat(${id}, '${campo}', ${valor - 1})">-</button>
+                    <span class="stat-val">${valor}</span>
+                    <button class="btn-small btn-plus" onclick="modificarStat(${id}, '${campo}', ${valor + 1})">+</button>
                 </div>
             </div>`;
     }
 
-    // 2. MODIFICAR STATS (CON AWAIT)
+    // 2. MODIFICAR STATS
     async function modificarStat(id, columna, nuevoValor) {
         if (nuevoValor < 0) return;
         await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}`, {
             method: 'PATCH',
             headers: {
                 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ [columna]: nuevoValor })
         });
         cargarJugadores();
     }
 
-    // 3. CARGAR CALENDARIO
+    // 3. ACTUALIZAR MARCADOR
+    async function updateScore(team, points) {
+        const columna = team === 'A' ? 'puntos_a' : 'puntos_b';
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const data = await res.json();
+        const nuevoTotal = data[0][columna] + points;
+
+        await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+            method: 'PATCH',
+            headers: {
+                'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ [columna]: nuevoTotal })
+        });
+    }
+
+    // 4. CARGAR CALENDARIO
     async function cargarCalendario() {
         try {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/calendario?select=*&order=fecha.asc`, {
@@ -145,36 +175,31 @@
             contenedor.innerHTML = '';
 
             eventos.forEach(ev => {
-                const fechaCorta = new Date(ev.fecha).toLocaleDateString('es-CL', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
                 const div = document.createElement('div');
                 div.className = 'event-card';
                 div.innerHTML = `
                     <div class="event-info">
                         <span class="event-teams">${ev.equipo_a} vs ${ev.equipo_b}</span>
-                        <span class="event-date">${fechaCorta} | ${ev.lugar}</span>
+                        <span class="event-detail">${ev.lugar} | ${ev.estado}</span>
                     </div>
-                    <span class="badge">${ev.estado}</span>
                 `;
                 contenedor.appendChild(div);
             });
-        } catch (e) { console.error("Error calendario:", e); }
+        } catch (e) { console.error(e); }
     }
 
-    // 4. SINCRONIZACIÓN DE MARCADOR
+    // SINCRONIZACIÓN
     setInterval(async () => {
-        try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-            });
-            const data = await res.json();
-            if (data.length > 0) {
-                document.getElementById('scoreA').innerText = data[0].puntos_a;
-                document.getElementById('scoreB').innerText = data[0].puntos_b;
-            }
-        } catch (e) { console.log("Sync error"); }
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const data = await res.json();
+        if (data.length > 0) {
+            document.getElementById('scoreA').innerText = data[0].puntos_a;
+            document.getElementById('scoreB').innerText = data[0].puntos_b;
+        }
     }, 3000);
 
-    // INICIO
     cargarJugadores();
     cargarCalendario();
 </script>
