@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>STELAR - Panel de Control</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; }
+        .header { background: #1e293b; padding: 20px; border-bottom: 3px solid #3b82f6; }
+        .scoreboard { display: flex; justify-content: center; gap: 40px; font-size: 3rem; margin: 20px 0; font-weight: bold; }
+        .team-box { background: #334155; padding: 20px; border-radius: 15px; min-width: 150px; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: 0 auto; padding: 20px; }
+        button { padding: 15px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .btn-score { background: #22c55e; color: white; }
+        .btn-timeout { background: #f59e0b; color: white; }
+        .btn-reset { background: #ef4444; color: white; margin-top: 20px; }
+        #timer-display { font-size: 2rem; color: #60a5fa; margin: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>STELAR</h1>
+    <div id="timer-display">00:00</div>
+</div>
+
+<div class="scoreboard">
+    <div class="team-box">
+        <div style="font-size: 1rem;">EQUIPO A</div>
+        <div id="scoreA">0</div>
+        <button class="btn-score" onclick="updateScore('A', 1)">+ PUNTO</button>
+    </div>
+    <div class="team-box">
+        <div style="font-size: 1rem;">EQUIPO B</div>
+        <div id="scoreB">0</div>
+        <button class="btn-score" onclick="updateScore('B', 1)">+ PUNTO</button>
+    </div>
+</div>
+
+<div class="controls">
+    <button class="btn-timeout" onclick="startTimeout(60)">TIEMPO MUERTO (60s)</button>
+    <button class="btn-timeout" onclick="startTimeout(600)">MEDIO TIEMPO (10m)</button>
+</div>
+
+<button class="btn-reset" onclick="resetGame()">REINICIAR PARTIDO</button>
+
+<script>
+    let scoreA = 0;
+    let scoreB = 0;
+    let timerInterval;
+
+    function updateScore(team, points) {
+        if(team === 'A') {
+            scoreA += points;
+            document.getElementById('scoreA').innerText = scoreA;
+        } else {
+            scoreB += points;
+            document.getElementById('scoreB').innerText = scoreB;
+        }
+    }
+
+    function startTimeout(seconds) {
+        clearInterval(timerInterval);
+        let timeLeft = seconds;
+        const display = document.getElementById('timer-display');
+        
+        timerInterval = setInterval(() => {
+            let mins = Math.floor(timeLeft / 60);
+            let secs = timeLeft % 60;
+            display.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                display.innerText = "¡TIEMPO AGOTADO!";
+                alert("El tiempo ha terminado");
+            }
+            timeLeft--;
+        }, 1000);
+    }
+
+    function resetGame() {
+        if(confirm("¿Seguro que quieres reiniciar todo?")) {
+            scoreA = 0; scoreB = 0;
+            document.getElementById('scoreA').innerText = 0;
+            document.getElementById('scoreB').innerText = 0;
+            document.getElementById('timer-display').innerText = "00:00";
+            clearInterval(timerInterval);
+        }
+    }
+</script>
+
+</body>
+</html>
