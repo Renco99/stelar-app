@@ -109,19 +109,24 @@
     async function modificarStat(id, columna, nuevoValor) {
     if (nuevoValor < 0) return; 
 
-    // Esta es la llamada que "habla" con Supabase
-    await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ [columna]: nuevoValor })
-    });
-    
-    cargarJugadores(); // Esto refresca la lista para que veas el cambio
+    // AGREGAMOS 'await' AQUÍ PARA ESPERAR LA RESPUESTA
+    try {
+        await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}`, {
+            method: 'PATCH',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ [columna]: nuevoValor })
+        });
+        
+        // Ahora sí, una vez confirmado, refrescamos la lista
+        await cargarJugadores(); 
+    } catch (error) {
+        console.error("Error al actualizar stat:", error);
+    }
 }
 
     // Sincronizar marcador principal cada 3 seg
