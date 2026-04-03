@@ -2,103 +2,114 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>STELAR - Panel de Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STELAR - High Performance</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; }
-        .header { background: #1e293b; padding: 20px; border-bottom: 3px solid #3b82f6; }
-        .scoreboard { display: flex; justify-content: center; gap: 40px; font-size: 3rem; margin: 20px 0; font-weight: bold; }
-        .team-box { background: #334155; padding: 20px; border-radius: 15px; min-width: 150px; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: 0 auto; padding: 20px; }
-        button { padding: 15px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; }
-        .btn-score { background: #22c55e; color: white; }
-        .btn-timeout { background: #f59e0b; color: white; }
-        .btn-reset { background: #ef4444; color: white; margin-top: 20px; }
-        #timer-display { font-size: 2rem; color: #60a5fa; margin: 10px; }
+        :root { --primary: #3b82f6; --secondary: #f59e0b; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 50px; }
+        
+        /* Header Estilo App */
+        .header { background: var(--card); padding: 15px; border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 800; letter-spacing: 2px; color: var(--primary); margin: 0; }
+        
+        /* Marcador Principal */
+        .live-match { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 30px 10px; margin-bottom: 20px; }
+        .score-container { display: flex; justify-content: space-around; align-items: center; max-width: 600px; margin: 0 auto; }
+        .team-name { font-size: 0.9rem; text-transform: uppercase; opacity: 0.8; margin-bottom: 10px; }
+        .score-number { font-size: 4rem; font-weight: 900; text-shadow: 0 0 15px var(--primary); }
+        
+        /* Botonera de Acción */
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; max-width: 500px; margin: 0 auto; }
+        .btn { border: none; padding: 18px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .btn-goal { background: var(--primary); color: white; }
+        .btn-assist { background: #10b981; color: white; }
+        .btn-def { background: #8b5cf6; color: white; }
+        .btn-timeout { background: var(--secondary); color: white; grid-column: span 2; }
+
+        /* Pestañas Inferiores (Simulación) */
+        .nav-tabs { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #334155; }
+        .nav-item { font-size: 0.7rem; opacity: 0.6; cursor: pointer; }
+        .nav-item.active { color: var(--primary); opacity: 1; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>STELAR</h1>
-    <div id="timer-display">00:00</div>
+    <h2 class="logo">STELAR</h2>
+    <div id="timer">00:00</div>
 </div>
 
-<div class="scoreboard">
-    <div class="team-box">
-        <div style="font-size: 1rem;">EQUIPO A</div>
-        <div id="scoreA">0</div>
-        <button class="btn-score" onclick="updateScore('A', 1)">+ PUNTO</button>
+<div class="live-match">
+    <div class="score-container">
+        <div class="team-box">
+            <div class="team-name">Local</div>
+            <div id="scoreA" class="score-number">0</div>
+        </div>
+        <div style="font-size: 1.5rem; opacity: 0.5;">VS</div>
+        <div class="team-box">
+            <div class="team-name">Visitante</div>
+            <div id="scoreB" class="score-number">0</div>
+        </div>
     </div>
-    <div class="team-box">
-        <div style="font-size: 1rem;">EQUIPO B</div>
-        <div id="scoreB">0</div>
-        <button class="btn-score" onclick="updateScore('B', 1)">+ PUNTO</button>
-    </div>
 </div>
 
-<div class="controls">
-    <button class="btn-timeout" onclick="startTimeout(60)">TIEMPO MUERTO (60s)</button>
-    <button class="btn-timeout" onclick="startTimeout(600)">MEDIO TIEMPO (10m)</button>
+<div class="action-grid">
+    <button class="btn btn-goal" onclick="updateScore('A', 1)">+ PUNTO LOCAL</button>
+    <button class="btn btn-goal" onclick="updateScore('B', 1)">+ PUNTO VISITA</button>
+    <button class="btn btn-assist" onclick="alert('Próximamente: Seleccionar jugador para ASISTENCIA')">ASISTENCIA</button>
+    <button class="btn btn-def" onclick="alert('Próximamente: Registrar DEFENSA')">DEFENSA (D)</button>
+    <button class="btn btn-timeout" onclick="startTimeout(60)">TIEMPO MUERTO</button>
 </div>
 
-<button class="btn-reset" onclick="resetGame()">REINICIAR PARTIDO</button>
+<nav class="nav-tabs">
+    <div class="nav-item active">EN VIVO</div>
+    <div class="nav-item" onclick="alert('Cargando Calendario...')">CALENDARIO</div>
+    <div class="nav-item" onclick="alert('Buscando Estadísticas...')">STATS</div>
+</nav>
 
 <script>
+    // RECUERDA COMPLETAR ESTO CON TUS DATOS DE SUPABASE
+    const SUPABASE_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
+    const PARTIDO_ID = 1;
+
     let scoreA = 0;
     let scoreB = 0;
-    let timerInterval;
-    const SUPABASE_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co'; // Tu URL de API
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI'; // Tu API Key (anon public)
-    const PARTIDO_ID = 1; // El ID del partido que creamos con SQL
 
     async function updateScore(team, points) {
-        // 1. Actualizamos el marcador en la pantalla (lo que ya hacíamos)
-        if(team === 'A') {
-            scoreA += points;
-            document.getElementById('scoreA').innerText = scoreA;
-        } else {
-            scoreB += points;
-            document.getElementById('scoreB').innerText = scoreB;
-        }
+        if(team === 'A') scoreA += points;
+        else scoreB += points;
+        
+        document.getElementById('scoreA').innerText = scoreA;
+        document.getElementById('scoreB').innerText = scoreB;
 
-        // 2. ENVIAR A SUPABASE (El punto 3 que faltaba)
         const columna = team === 'A' ? 'puntos_a' : 'puntos_b';
         const nuevoPuntaje = team === 'A' ? scoreA : scoreB;
 
-        try {
-            await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ [columna]: nuevoPuntaje })
-            });
-            console.log("Sincronizado con éxito");
-        } catch (error) {
-            console.error("Error al sincronizar:", error);
-        }
+        await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+            method: 'PATCH',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ [columna]: nuevoPuntaje })
+        });
     }
-// Esta función revisa la base de datos cada 3 segundos
-setInterval(async () => {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-        headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-        }
-    });
-    const data = await response.json();
-    
-    if (data.length > 0) {
-        // Actualizamos los números en la pantalla automáticamente
-        scoreA = data[0].puntos_a;
-        scoreB = data[0].puntos_b;
-        document.getElementById('scoreA').innerText = scoreA;
-        document.getElementById('scoreB').innerText = scoreB;
-    }
-}, 3000);
-</script>
 
+    // Lector automático (cada 3 segundos)
+    setInterval(async () => {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const data = await res.json();
+        if (data.length > 0) {
+            scoreA = data[0].puntos_a;
+            scoreB = data[0].puntos_b;
+            document.getElementById('scoreA').innerText = scoreA;
+            document.getElementById('scoreB').innerText = scoreB;
+        }
+    }, 3000);
+</script>
 </body>
 </html>
