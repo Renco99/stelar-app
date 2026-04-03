@@ -80,6 +80,24 @@
             console.error("Error al sincronizar:", error);
         }
     }
+// Esta función revisa la base de datos cada 3 segundos
+setInterval(async () => {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+        headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+        }
+    });
+    const data = await response.json();
+    
+    if (data.length > 0) {
+        // Actualizamos los números en la pantalla automáticamente
+        scoreA = data[0].puntos_a;
+        scoreB = data[0].puntos_b;
+        document.getElementById('scoreA').innerText = scoreA;
+        document.getElementById('scoreB').innerText = scoreB;
+    }
+}, 3000);
 </script>
 
 </body>
