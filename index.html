@@ -34,22 +34,10 @@
 </head>
 <body>
 
-<div class="header">
-    <h2 class="logo">STELAR</h2>
-    <div id="timer">00:00</div>
-</div>
-
-<div class="live-match">
-    <div class="score-container">
-        <div class="team-box">
-            <div class="team-name">Local</div>
-            <div id="scoreA" class="score-number">0</div>
-        </div>
-        <div style="font-size: 1.5rem; opacity: 0.5;">VS</div>
-        <div class="team-box">
-            <div class="team-name">Visitante</div>
-            <div id="scoreB" class="score-number">0</div>
-        </div>
+<div class="stats-panel">
+    <h3>Estadísticas de Jugadores 🏆</h3>
+    <div id="lista-jugadores">
+        <p style="opacity:0.5;">Cargando jugadores...</p>
     </div>
 </div>
 
@@ -110,6 +98,71 @@
             document.getElementById('scoreB').innerText = scoreB;
         }
     }, 3000);
+// --- FUNCIÓN PARA CARGAR JUGADORES DESDE SUPABASE ---
+async function cargarJugadores() {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/jugadores?select=*&order=numero.asc`, {
+            headers: { 
+                'apikey': SUPABASE_KEY, 
+                'Authorization': `Bearer ${SUPABASE_KEY}` 
+            }
+        });
+        const jugadores = await res.json();
+        
+        const contenedor = document.getElementById('lista-jugadores');
+        contenedor.innerHTML = ''; // Limpiamos el mensaje de "Cargando"
+
+        jugadores.forEach(j => {
+            const div = document.createElement('div');
+            div.className = 'player-row';
+            div.innerHTML = `
+                <span><strong>#${j.numero}</strong> ${j.nombre} <small>(${j.equipo})</small></span>
+                <div>
+                    <button class="btn btn-small btn-goal" onclick="registrarAccion(${j.id}, 'goles', '${j.equipo}')">G</button>
+                    <button class="btn btn-small btn-assist" onclick="registrarAccion(${j.id}, 'asistencias')">A</button>
+                    <button class="btn btn-small btn-def" onclick="registrarAccion(${j.id}, 'defensas')">D</button>
+                </div>
+            `;
+            contenedor.appendChild(div);
+        });
+    } catch (error) {
+        console.error("Error cargando jugadores:", error);
+    }
+}
+
+// --- FUNCIÓN PARA REGISTRAR LA ACCIÓN REAL ---
+async function registrarAccion(id, columna, equipo) {
+    // Si es GOL, actualizamos el marcador principal también
+    if (columna === 'goles') {
+        // Determinamos si el equipo del jugador es Local o Visitante para sumar el punto
+        // (Esto es una lógica simple, luego la haremos más pro)
+        const teamKey = (equipo === 'Revolución') ? 'A' : 'B'; 
+        updateScore(teamKey, 1);
+    }
+
+    // Actualizamos la estadística del jugador en Supabase (Incremento +1)
+    // Nota: Usamos RPC para que sea un incremento real en la base de datos
+    alert(`Registrando ${columna} para el jugador ID: ${id}`);
+    
+    // Aquí disparamos la actualización a Supabase
+    await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+        },
+        // Aquí necesitaríamos una lógica de "valor actual + 1" 
+        // Por ahora lo dejamos listo para conectar
+        body: JSON.stringify({ [columna]: 10 }) // Ejemplo: setea a 10 para probar
+    });
+    
+    cargarJugadores(); // Refrescamos la lista para ver cambios
+}
+
+// IMPORTANTE: Llamar a la función al cargar la página
+cargarJugadores();
 </script>
 </body>
 </html>
