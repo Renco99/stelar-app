@@ -85,19 +85,28 @@
         });
     }
 
-    // Lector automático (cada 3 segundos)
-    setInterval(async () => {
+// Lector automático (cada 3 segundos)
+setInterval(async () => {
+    try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
         });
         const data = await res.json();
-        if (data.length > 0) {
+        
+        // Verificamos que existan los elementos antes de asignarles valor
+        const elemA = document.getElementById('scoreA');
+        const elemB = document.getElementById('scoreB');
+
+        if (data.length > 0 && elemA && elemB) {
             scoreA = data[0].puntos_a;
             scoreB = data[0].puntos_b;
-            document.getElementById('scoreA').innerText = scoreA;
-            document.getElementById('scoreB').innerText = scoreB;
+            elemA.innerText = scoreA;
+            elemB.innerText = scoreB;
         }
-    }, 3000);
+    } catch (e) {
+        console.log("Error en el lector:", e);
+    }
+}, 3000);
 // --- FUNCIÓN PARA CARGAR JUGADORES DESDE SUPABASE ---
 async function cargarJugadores() {
     try {
