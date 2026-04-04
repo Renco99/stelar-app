@@ -3,38 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STELLAR - Match Hub</title>
+    <title>STELLAR - Match Hub PRO</title>
     <style>
         :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --danger: #ef4444; --success: #10b981; --stellar-gold: #fbbf24; }
-        body { font-family: system-ui, sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 90px; }
         
+        /* Navegación */
         .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #334155; z-index: 100; }
-        .nav-item { color: white; opacity: 0.5; font-size: 0.7rem; text-align: center; cursor: pointer; }
-        .nav-item.active { opacity: 1; color: var(--stellar-gold); }
+        .nav-item { color: white; opacity: 0.5; font-size: 0.75rem; text-align: center; cursor: pointer; flex: 1; }
+        .nav-item.active { opacity: 1; color: var(--stellar-gold); font-weight: bold; }
 
-        .view { display: none; padding: 15px; animation: fadeIn 0.3s; }
+        .view { display: none; padding: 15px; animation: fadeIn 0.2s; }
         .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Tarjetas de Selección de Partido */
+        /* Tarjetas */
         .match-select-card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 10px; border: 1px solid #334155; cursor: pointer; position: relative; }
-        .match-select-card:active { transform: scale(0.98); }
-        .status-badge { position: absolute; top: 10px; right: 10px; font-size: 0.6rem; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; }
-        .status-live { background: var(--danger); animation: blink 1s infinite; }
-        
-        /* Planilla Upper Controls */
-        .planilla-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .btn-ctrl { padding: 6px 12px; border-radius: 6px; border: none; font-weight: bold; font-size: 0.7rem; color: white; cursor: pointer; }
-
         .score-board { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid #334155; margin-bottom: 15px; }
-        .game-clock { font-family: monospace; font-size: 2.8rem; font-weight: 800; color: var(--stellar-gold); }
         
+        /* Botones */
+        .btn-ctrl { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; font-size: 0.75rem; color: white; cursor: pointer; }
+        .btn-full { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
         .grid-players { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .player-card { background: var(--card); border-radius: 10px; margin-bottom: 8px; border: 1px solid #475569; overflow: hidden; }
-        .player-info { padding: 10px; font-size: 0.8rem; display: flex; justify-content: space-between; }
+        .player-card { background: var(--card); border-radius: 10px; padding: 12px; border: 1px solid #475569; text-align: center; font-size: 0.85rem; }
         
-        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; background: #1e293b; color: white; border: 1px solid #334155; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        input { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; background: #1e293b; color: white; border: 1px solid #334155; box-sizing: border-box; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -42,55 +36,45 @@
     <div id="view-tournament" class="view active">
         <h2 style="color:var(--stellar-gold)">HUB DE PARTIDOS</h2>
         <div style="background:var(--card); padding:15px; border-radius:15px; margin-bottom:20px; border:1px solid var(--primary)">
-            <h4 style="margin:0 0 10px 0">Crear Nuevo Encuentro</h4>
             <input type="text" id="new-a" placeholder="Equipo Local">
             <input type="text" id="new-b" placeholder="Equipo Visita">
             <input type="text" id="new-c" placeholder="Cancha / Categoría">
-            <button onclick="createMatch()" style="width:100%; background:var(--success); color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; margin-top:10px">REGISTRAR PARTIDO</button>
+            <button onclick="createMatch()" class="btn-full" style="background:var(--success); color:white;">REGISTRAR PARTIDO</button>
         </div>
-        
-        <h4 style="opacity:0.6; font-size:0.8rem">PARTIDOS DISPONIBLES</h4>
         <div id="match-list">Cargando partidos...</div>
     </div>
 
     <div id="view-sheet" class="view">
-        <div class="planilla-header">
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px">
             <button onclick="showView('tournament')" class="btn-ctrl" style="background:#475569">← VOLVER</button>
-            <div style="display:flex; gap:5px">
-                <button id="btn-start-game" onclick="toggleClock()" class="btn-ctrl" style="background:var(--success)">INICIAR</button>
-                <button onclick="resetStats()" class="btn-ctrl" style="background:var(--danger)">RESET</button>
-            </div>
+            <button id="btn-toggle-clock" onclick="toggleClock()" class="btn-ctrl" style="background:var(--success)">INICIAR</button>
         </div>
 
         <div class="score-board">
-            <div id="game-cancha" style="font-size:0.6rem; color:var(--stellar-gold); letter-spacing:1px">SELECCIONA UN PARTIDO</div>
-            <div id="game-timer" class="game-clock">00:00</div>
+            <div id="game-cancha" style="font-size:0.6rem; color:var(--stellar-gold); letter-spacing:1px; margin-bottom:5px">CANCHA</div>
+            <div id="game-timer" style="font-family:monospace; font-size:3rem; font-weight:800">00:00</div>
             <div style="display:flex; justify-content:space-around; font-size:3.5rem; font-weight:900;">
-                <span id="scoreA">0</span> : <span id="scoreB">0</span>
+                <span id="scoreA">0</span><span>:</span><span id="scoreB">0</span>
             </div>
-            <div style="display:flex; gap:8px; margin-top:15px">
-                <button id="to-a" class="btn-ctrl" style="flex:1; background:#334155" onclick="runTO('A')">TO LOCAL</button>
-                <button id="to-half" class="btn-ctrl" style="flex:0.6; background:#334155" onclick="runHalf()">MITAD</button>
-                <button id="to-b" class="btn-ctrl" style="flex:1; background:#334155" onclick="runTO('B')">TO VISITA</button>
-            </div>
-            <button id="btn-cancel-to" onclick="cancelTimers()" style="display:none; width:100%; margin-top:10px; background:var(--danger); border:none; color:white; padding:8px; border-radius:8px; font-weight:bold">CANCELAR TIEMPO</button>
         </div>
 
         <div class="grid-players">
             <div id="listA"></div>
             <div id="listB"></div>
         </div>
+
+        <button onclick="finishMatch()" class="btn-full" style="background:var(--danger); color:white; margin-top:30px">FINALIZAR Y GUARDAR</button>
     </div>
 
     <div id="view-results" class="view">
         <h2 style="color:var(--stellar-gold)">HISTORIAL</h2>
-        <div id="history-list"></div>
+        <div id="history-list">No hay partidos finalizados.</div>
     </div>
 
     <nav class="nav-bar">
-        <div class="nav-item active" onclick="showView('tournament', this)">🏆 Torneo</div>
-        <div class="nav-item" id="nav-planilla" onclick="showView('sheet', this)">📋 Planilla</div>
-        <div class="nav-item" onclick="showView('results', this)">📊 Resultados</div>
+        <div class="nav-item active" onclick="showView('tournament')">🏆 Torneo</div>
+        <div class="nav-item" id="nav-planilla" onclick="showView('sheet')">📋 Planilla</div>
+        <div class="nav-item" onclick="showView('results')">📊 Resultados</div>
     </nav>
 
     <script>
@@ -99,16 +83,19 @@
         const HEAD = { 'apikey': S_KEY, 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
         let currentMatch = null;
-        let mainTimer = null;
+        let timerInt = null;
         let seconds = 0;
-        let isClockRunning = false;
+        let isRunning = false;
 
-        // --- NAVEGACIÓN ---
-        function showView(viewId, el) {
+        // --- NAVEGACIÓN CORREGIDA ---
+        function showView(viewId) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => {
+                n.classList.remove('active');
+                if(n.innerText.toLowerCase().includes(viewId.replace('view-',''))) n.classList.add('active');
+            });
             document.getElementById('view-' + viewId).classList.add('active');
-            if(el) el.classList.add('active');
+            
             if(viewId === 'tournament') loadMatches();
             if(viewId === 'results') loadHistory();
         }
@@ -118,7 +105,7 @@
             const a = document.getElementById('new-a').value;
             const b = document.getElementById('new-b').value;
             const c = document.getElementById('new-c').value;
-            if(!a || !b) return alert("Faltan nombres de equipos");
+            if(!a || !b) return alert("Indica ambos equipos");
             
             await fetch(`${S_URL}/partidos`, {
                 method: 'POST', headers: HEAD,
@@ -129,13 +116,13 @@
 
         async function loadMatches() {
             const res = await fetch(`${S_URL}/partidos?estado=neq.finalizado&order=id.desc`, { headers: HEAD });
-            const matches = await res.json();
-            const cont = document.getElementById('match-list');
-            cont.innerHTML = matches.map(m => `
+            const data = await res.json();
+            const list = document.getElementById('match-list');
+            list.innerHTML = data.map(m => `
                 <div class="match-select-card" onclick="selectMatch(${m.id})">
-                    <span class="status-badge ${m.estado === 'en curso' ? 'status-live' : ''}" style="background:#475569">${m.estado}</span>
-                    <div style="font-size:0.7rem; opacity:0.6">${m.cancha}</div>
-                    <div style="font-weight:bold; margin-top:5px">${m.equipo_a} vs ${m.equipo_b}</div>
+                    <div style="font-size:0.6rem; opacity:0.5">${m.cancha}</div>
+                    <div style="font-weight:bold">${m.equipo_a} vs ${m.equipo_b}</div>
+                    <div style="font-size:0.7rem; color:var(--stellar-gold)">${m.estado.toUpperCase()}</div>
                 </div>
             `).join('');
         }
@@ -143,12 +130,11 @@
         async function selectMatch(id) {
             const res = await fetch(`${S_URL}/partidos?id=eq.${id}`, { headers: HEAD });
             currentMatch = (await res.json())[0];
-            showView('sheet', document.getElementById('nav-planilla'));
+            showView('sheet');
             document.getElementById('game-cancha').innerText = currentMatch.cancha.toUpperCase();
             loadSheet();
         }
 
-        // --- PLANILLA EN VIVO ---
         async function loadSheet() {
             if(!currentMatch) return;
             document.getElementById('scoreA').innerText = currentMatch.puntos_a;
@@ -160,20 +146,17 @@
             lA.innerHTML = ''; lB.innerHTML = '';
 
             jugadores.forEach(j => {
-                const html = `<div class="player-card" onclick="addPoint(${j.id}, '${j.equipo}')">
-                    <div class="player-info">
-                        <span>#${j.numero} ${j.nombre.split(' ')[0]}</span>
-                        <span style="color:var(--stellar-gold)">${j.goles||0}</span>
-                    </div>
+                const card = `<div class="player-card" onclick="addPoint(${j.id}, '${j.equipo}')">
+                    #${j.numero} ${j.nombre.split(' ')[0]} <br>
+                    <b style="color:var(--stellar-gold)">${j.goles||0}</b>
                 </div>`;
-                if(j.equipo.toLowerCase() === currentMatch.equipo_a.toLowerCase()) lA.innerHTML += html;
-                else if(j.equipo.toLowerCase() === currentMatch.equipo_b.toLowerCase()) lB.innerHTML += html;
+                if(j.equipo.toLowerCase() === currentMatch.equipo_a.toLowerCase()) lA.innerHTML += card;
+                else if(j.equipo.toLowerCase() === currentMatch.equipo_b.toLowerCase()) lB.innerHTML += card;
             });
         }
 
         async function addPoint(jId, team) {
             if(!confirm("¿Registrar gol?")) return;
-            // 1. Sumar al jugador
             const resJ = await fetch(`${S_URL}/jugadores?id=eq.${jId}`, { headers: HEAD });
             const jData = (await resJ.json())[0];
             await fetch(`${S_URL}/jugadores?id=eq.${jId}`, {
@@ -181,70 +164,64 @@
                 body: JSON.stringify({ goles: (jData.goles || 0) + 1 })
             });
 
-            // 2. Sumar al equipo
-            const isA = team.toLowerCase() === currentMatch.equipo_a.toLowerCase();
-            const field = isA ? 'puntos_a' : 'puntos_b';
-            const newVal = currentMatch[field] + 1;
-            
+            const field = team.toLowerCase() === currentMatch.equipo_a.toLowerCase() ? 'puntos_a' : 'puntos_b';
+            currentMatch[field]++;
             await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, {
                 method: 'PATCH', headers: HEAD,
-                body: JSON.stringify({ [field]: newVal })
+                body: JSON.stringify({ [field]: currentMatch[field] })
             });
-            
-            currentMatch[field] = newVal;
             loadSheet();
         }
 
-        // --- RELOJ Y TIEMPOS ---
+        // --- RELOJ ---
         function toggleClock() {
-            const btn = document.getElementById('btn-start-game');
-            if(!isClockRunning) {
-                isClockRunning = true;
-                btn.innerText = "PAUSAR"; btn.style.background = var(--danger);
-                mainTimer = setInterval(() => {
+            const btn = document.getElementById('btn-toggle-clock');
+            if(!isRunning) {
+                isRunning = true;
+                btn.innerText = "PAUSAR"; btn.style.background = "var(--danger)";
+                timerInt = setInterval(() => {
                     seconds++;
                     const m = Math.floor(seconds/60); const s = seconds%60;
-                    document.getElementById('game-timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                    document.getElementById('game-timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
                 }, 1000);
             } else {
-                isClockRunning = false;
-                btn.innerText = "REANUDAR"; btn.style.background = var(--success);
-                clearInterval(mainTimer);
+                isRunning = false;
+                btn.innerText = "REANUDAR"; btn.style.background = "var(--success)";
+                clearInterval(timerInt);
             }
         }
 
-        function runTO(side) {
-            const btn = document.getElementById('to-' + side.toLowerCase());
-            startCountdown(70, btn, "TO " + side);
+        // --- GUARDAR Y FINALIZAR ---
+        async function finishMatch() {
+            if(!currentMatch) return;
+            if(!confirm("¿Deseas finalizar y guardar el resultado? El partido pasará al Historial.")) return;
+            
+            await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, {
+                method: 'PATCH', headers: HEAD,
+                body: JSON.stringify({ estado: 'finalizado' })
+            });
+            
+            clearInterval(timerInt);
+            isRunning = false;
+            seconds = 0;
+            document.getElementById('game-timer').innerText = "00:00";
+            alert("Partido guardado con éxito.");
+            showView('results');
         }
 
-        function runHalf() {
-            startCountdown(300, document.getElementById('to-half'), "MITAD");
-        }
-
-        function startCountdown(sec, btn, text) {
-            document.getElementById('btn-cancel-to').style.display = 'block';
-            let t = sec;
-            btn.style.background = 'var(--danger)';
-            const int = setInterval(() => {
-                btn.innerText = `${Math.floor(t/60)}:${t%60}`;
-                if(t-- <= 0 || !document.getElementById('btn-cancel-to').style.display === 'none') {
-                    clearInterval(int);
-                    btn.innerText = text; btn.style.background = '#334155';
-                    document.getElementById('btn-cancel-to').style.display = 'none';
-                }
-            }, 1000);
-        }
-
-        function cancelTimers() {
-            document.getElementById('btn-cancel-to').style.display = 'none';
-        }
-
-        async function resetStats() {
-            if(!confirm("¿Resetear puntos del partido y estadísticas de jugadores a 0?")) return;
-            await fetch(`${S_URL}/jugadores`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ goles: 0, asistencias: 0, defensas: 0 }) });
-            await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ puntos_a: 0, puntos_b: 0 }) });
-            location.reload();
+        async function loadHistory() {
+            const res = await fetch(`${S_URL}/partidos?estado=eq.finalizado&order=id.desc`, { headers: HEAD });
+            const data = await res.json();
+            const list = document.getElementById('history-list');
+            list.innerHTML = data.map(m => `
+                <div class="match-select-card" style="border-left: 5px solid var(--stellar-gold)">
+                    <div style="font-size:0.6rem; opacity:0.5">${m.cancha} | FINALIZADO</div>
+                    <div style="font-weight:bold; display:flex; justify-content:space-between">
+                        <span>${m.equipo_a} vs ${m.equipo_b}</span>
+                        <span style="color:var(--stellar-gold)">${m.puntos_a} - ${m.puntos_b}</span>
+                    </div>
+                </div>
+            `).join('') || "No hay partidos finalizados.";
         }
 
         loadMatches();
