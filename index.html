@@ -3,66 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STELAR - High Performance</title>
+    <title>STELLAR - Ultimate Control</title>
     <style>
-        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: white; margin: 0; padding: 15px; padding-bottom: 80px; }
+        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --stellar-gold: #fbbf24; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: white; margin: 0; padding: 15px; padding-bottom: 100px; }
+        
+        /* Cabecera Stellar */
+        .app-header { text-align: center; margin-bottom: 15px; }
+        .app-header h1 { font-size: 1.5rem; letter-spacing: 3px; color: var(--stellar-gold); margin: 0; font-weight: 900; text-transform: uppercase; }
         
         /* Marcador Pro */
-        .score-board { background: var(--card); padding: 20px; border-radius: 24px; text-align: center; margin-bottom: 20px; border: 1px solid #334155; position: relative; }
-        .teams-header { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; opacity: 0.6; margin-bottom: 5px; padding: 0 10px; }
+        .score-board { background: var(--card); padding: 20px; border-radius: 24px; text-align: center; margin-bottom: 15px; border: 2px solid #334155; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .teams-info { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: var(--stellar-gold); margin-bottom: 5px; text-transform: uppercase; }
         .score-display { display: flex; justify-content: space-around; align-items: center; font-size: 4.5rem; font-weight: 900; line-height: 1; }
-        .vs { font-size: 1.2rem; opacity: 0.2; }
-        
-        .reset-btn { position: absolute; top: 10px; right: 10px; background: none; border: 1px solid #475569; color: #475569; font-size: 0.6rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+        .vs-divider { font-size: 1.2rem; opacity: 0.3; font-weight: 300; }
 
-        /* Tarjetas */
-        .player-card { background: var(--card); padding: 16px; border-radius: 16px; margin-bottom: 12px; border-left: 6px solid var(--primary); }
-        .player-head { display: flex; justify-content: space-between; margin-bottom: 12px; }
-        .player-name { font-weight: 700; }
-        .player-team { font-size: 0.7rem; color: var(--warning); font-weight: 800; }
+        /* Cronómetros Stellar */
+        .timer-zone { display: flex; gap: 12px; margin-top: 18px; }
+        .btn-timer { background: #1e293b; border: 1px solid #475569; color: white; padding: 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; cursor: pointer; flex: 1; transition: 0.3s; }
+        .btn-timer.active { background: var(--danger); border-color: white; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(0.96); } 100% { transform: scale(1); } }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .stat-box { background: #0f172a; padding: 10px 4px; border-radius: 12px; text-align: center; }
-        .stat-label { font-size: 0.6rem; opacity: 0.5; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        
-        .counter { display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-stat { width: 32px; height: 32px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+        /* Listado de Jugadores Acordeón */
+        .player-row { background: var(--card); margin-bottom: 10px; border-radius: 16px; overflow: hidden; border: 1px solid #334155; transition: 0.2s; }
+        .player-header { padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .player-info-main { display: flex; flex-direction: column; }
+        .player-name { font-weight: 800; font-size: 1.05rem; color: #f8fafc; }
+        .player-team-tag { font-size: 0.65rem; color: var(--stellar-gold); font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+        .player-quick-stats { font-family: monospace; font-size: 0.85rem; color: var(--primary); font-weight: bold; background: #0f172a; padding: 4px 8px; border-radius: 6px; }
+
+        .player-content { display: none; padding: 20px; background: #111827; border-top: 1px solid #334155; }
+        .player-content.open { display: block; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Controles de Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .stat-box { text-align: center; background: var(--card); padding: 12px 5px; border-radius: 14px; border: 1px solid #475569; }
+        .stat-label { font-size: 0.6rem; opacity: 0.6; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; display: block; }
+        .counter { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-stat { width: 36px; height: 36px; border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .plus { background: var(--success); }
         .minus { background: var(--danger); }
-        .stat-val { font-size: 1.2rem; font-weight: 800; min-width: 20px; }
+        .stat-val { font-size: 1.5rem; font-weight: 900; min-width: 25px; }
 
-        .section-title { font-size: 0.8rem; color: var(--primary); font-weight: 800; text-transform: uppercase; margin: 25px 0 15px 5px; }
+        .section-header { font-size: 0.8rem; color: var(--primary); font-weight: 900; text-transform: uppercase; margin: 25px 0 12px 5px; letter-spacing: 1.5px; }
     </style>
 </head>
 <body>
 
+    <div class="app-header">
+        <h1>STELLAR</h1>
+    </div>
+
     <div class="score-board">
-        <button class="reset-btn" onclick="resetMarcador()">RESET</button>
-        <div class="teams-header">
+        <div class="teams-info">
             <span id="nameA">LOCAL</span>
-            <span>VS</span>
+            <span>LIVE MATCH</span>
             <span id="nameB">VISITA</span>
         </div>
         <div class="score-display">
             <div id="scoreA">0</div>
-            <div class="vs">:</div>
+            <div class="vs-divider">:</div>
             <div id="scoreB">0</div>
+        </div>
+
+        <div class="timer-zone">
+            <button id="btn-timeout" class="btn-timer" onclick="startTimer(70, 'btn-timeout', 'TIME OUT (70s)')">TIME OUT (70s)</button>
+            <button id="btn-half" class="btn-timer" onclick="startTimer(300, 'btn-half', 'MITAD (5m)')">MITAD (5m)</button>
         </div>
     </div>
 
-    <div class="section-title">🏃 Planilla en Vivo</div>
-    <div id="lista-jugadores">Cargando jugadores...</div>
+    <div class="section-header">🏃 Plantel de Jugadores</div>
+    <div id="lista-jugadores">Sincronizando con Stellar Cloud...</div>
 
     <script>
         const SUPABASE_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
         const PARTIDO_ID = 1;
 
-        // 1. CARGAR DATOS
         async function fetchAll() {
             try {
-                // Traer Partido para saber quién es local y visita
                 const resP = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
@@ -74,7 +94,6 @@
                     document.getElementById('scoreB').innerText = partido[0].puntos_b;
                 }
 
-                // Traer Jugadores
                 const resJ = await fetch(`${SUPABASE_URL}/rest/v1/jugadores?select=*&order=numero.asc`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
@@ -83,100 +102,98 @@
                 contJ.innerHTML = '';
                 
                 jugadores.forEach(j => {
-                    const card = document.createElement('div');
-                    card.className = 'player-card';
-                    card.innerHTML = `
-                        <div class="player-head">
-                            <span class="player-name">#${j.numero} ${j.nombre}</span>
-                            <span class="player-team">${j.equipo}</span>
+                    const row = document.createElement('div');
+                    row.className = 'player-row';
+                    row.innerHTML = `
+                        <div class="player-header" onclick="togglePlayer(${j.id})">
+                            <div class="player-info-main">
+                                <span class="player-name">#${j.numero} ${j.nombre}</span>
+                                <span class="player-team-tag">${j.equipo}</span>
+                            </div>
+                            <div class="player-quick-stats">
+                                ${j.goles || 0}/${j.asistencias || 0}/${j.defensas || 0}
+                            </div>
                         </div>
-                        <div class="stats-grid">
-                            ${renderControl(j.id, 'goles', j.goles, 'GOL', j.equipo)}
-                            ${renderControl(j.id, 'asistencias', j.asistencias, 'AST')}
-                            ${renderControl(j.id, 'defensas', j.defensas, 'DEF')}
+                        <div id="content-${j.id}" class="player-content">
+                            <div class="stats-grid">
+                                ${renderControl(j.id, 'goles', j.goles, 'GOLES', j.equipo)}
+                                ${renderControl(j.id, 'asistencias', j.asistencias, 'ASIST', j.equipo)}
+                                ${renderControl(j.id, 'defensas', j.defensas, 'DEFEN', j.equipo)}
+                            </div>
                         </div>`;
-                    contJ.appendChild(card);
+                    contJ.appendChild(row);
                 });
             } catch (e) { console.error(e); }
         }
 
-        function renderControl(id, col, val, label, equipo = null) {
+        function togglePlayer(id) {
+            const el = document.getElementById(`content-${id}`);
+            const isVisible = el.classList.contains('open');
+            document.querySelectorAll('.player-content').forEach(c => c.classList.remove('open'));
+            if (!isVisible) el.classList.add('open');
+        }
+
+        function renderControl(id, col, val, label, equipo) {
             return `
                 <div class="stat-box">
                     <span class="stat-label">${label}</span>
                     <div class="counter">
-                        <button class="btn-stat minus" onclick="updateStat(${id}, '${col}', ${val - 1}, '${equipo}')">-</button>
+                        <button class="btn-stat minus" onclick="updateStat(${id}, '${col}', ${(val||0) - 1}, '${equipo}')">-</button>
                         <span class="stat-val">${val || 0}</span>
-                        <button class="btn-stat plus" onclick="updateStat(${id}, '${col}', ${val + 1}, '${equipo}')">+</button>
+                        <button class="btn-stat plus" onclick="updateStat(${id}, '${col}', ${(val||0) + 1}, '${equipo}')">+</button>
                     </div>
                 </div>`;
         }
 
-        // 2. ACTUALIZAR STATS Y MARCADOR SIMULTÁNEO
-       async function updateStat(id, col, newVal, equipoJugador) {
-    if (newVal < 0) return;
+        let timerInt = null;
+        function startTimer(sec, id, text) {
+            if (timerInt) clearInterval(timerInt);
+            const btn = document.getElementById(id);
+            btn.classList.add('active');
+            let t = sec;
+            timerInt = setInterval(() => {
+                let m = Math.floor(t/60), s = t%60;
+                btn.innerText = `${m}:${s<10?'0':''}${s}`;
+                if (t-- <= 0) {
+                    clearInterval(timerInt);
+                    btn.classList.remove('active');
+                    btn.innerText = text;
+                    alert("STELLAR: Tiempo finalizado");
+                }
+            }, 1000);
+        }
 
-    // 1. Obtener valor actual para calcular la diferencia
-    const resOld = await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}&select=${col}`, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
-    const oldData = await resOld.json();
-    const oldVal = oldData[0][col] || 0;
-    const diff = newVal - oldVal;
+        async function updateStat(id, col, newVal, equipoJ) {
+            if (newVal < 0) return;
+            const resOld = await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}&select=${col}`, {
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+            });
+            const oldData = await resOld.json();
+            const diff = newVal - (oldData[0][col] || 0);
 
-    // 2. Actualizar Jugador en Supabase
-    await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [col]: newVal })
-    });
-
-    // 3. Si es GOL, actualizar marcador principal
-    if (col === 'goles') {
-        const nameA = document.getElementById('nameA').innerText.trim().toLowerCase();
-        const teamJ = equipoJugador.trim().toLowerCase();
-        
-        // Comparamos nombres sin importar mayúsculas/minúsculas
-        const field = (teamJ === nameA) ? 'puntos_a' : 'puntos_b';
-        
-        const resP = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-        });
-        const pData = await resP.json();
-        const newScore = (pData[0][field] || 0) + diff;
-
-        await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ [field]: newScore < 0 ? 0 : newScore })
-        });
-    }
-    fetchAll(); // Refrescar vista
-}
-
-        // 3. RESETEAR TODO
-        async function resetMarcador() {
-            if(!confirm("¿Seguro quieres reiniciar el marcador y las estadísticas?")) return;
-            
-            // Reset Partido
-            await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+            await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}`, {
                 method: 'PATCH',
                 headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ puntos_a: 0, puntos_b: 0 })
+                body: JSON.stringify({ [col]: newVal })
             });
 
-            // Reset Jugadores (Opcional: puedes resetear solo el marcador si prefieres)
-            // Para resetear estadísticas de todos:
-            const resJ = await fetch(`${SUPABASE_URL}/rest/v1/jugadores`, {
-                method: 'PATCH',
-                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ goles: 0, asistencias: 0, defensas: 0 })
-            });
-
+            if (col === 'goles') {
+                const nA = document.getElementById('nameA').innerText.trim().toLowerCase();
+                const f = (equipoJ.trim().toLowerCase() === nA) ? 'puntos_a' : 'puntos_b';
+                const resP = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                const pD = await resP.json();
+                await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+                    method: 'PATCH',
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [f]: (pD[0][f] || 0) + diff })
+                });
+            }
             fetchAll();
         }
 
-        setInterval(fetchAll, 5000); // Sincroniza todo cada 5 segundos
+        setInterval(fetchAll, 10000);
         fetchAll();
     </script>
 </body>
