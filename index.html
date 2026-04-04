@@ -3,45 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STELLAR - Pro Console</title>
+    <title>STELLAR - Tournament Admin</title>
     <style>
         :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --danger: #ef4444; --success: #10b981; --stellar-gold: #fbbf24; }
         body { font-family: system-ui, sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
         
-        /* HEADER PRINCIPAL (Mesa de Control) */
+        /* CONSOLA DE ARBITRAJE */
         .control-panel { background: #000; padding: 10px; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 100; }
-        .score-row { display: flex; align-items: center; justify-content: space-between; text-align: center; margin-bottom: 10px; }
-        .team-box { flex: 1; }
-        .team-name { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: var(--primary); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .score-val { font-size: 2.2rem; font-weight: 900; }
-        .timer-center { flex: 1.2; }
-        .game-clock { font-family: monospace; font-size: 2.8rem; font-weight: 800; color: var(--stellar-gold); line-height: 1; }
-        .clock-warning { color: var(--danger); animation: blink 1s infinite; }
+        .score-row { display: flex; align-items: center; justify-content: space-between; text-align: center; }
+        .game-clock { font-family: monospace; font-size: 2.5rem; font-weight: 800; color: var(--stellar-gold); }
+        .team-name { font-size: 0.6rem; font-weight: 900; color: var(--primary); text-transform: uppercase; }
+        .score-val { font-size: 2rem; font-weight: 900; }
+        .time-controls { display: flex; gap: 4px; margin-top: 8px; }
+        .btn-t { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 0.6rem; font-weight: bold; cursor: pointer; color: white; text-transform: uppercase; background: #334155; }
 
-        /* BOTONERA DE TIEMPOS */
-        .time-controls { display: flex; gap: 5px; margin-bottom: 5px; }
-        .btn-t { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 0.6rem; font-weight: bold; cursor: pointer; background: #334155; color: white; text-transform: uppercase; }
-        .btn-master { background: var(--success); }
-
-        /* CONFIGURACIÓN Y LISTAS */
+        /* VISTAS */
         .view { display: none; padding: 15px; animation: fadeIn 0.3s; }
         .view.active { display: block; }
-        .config-card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
-        .setup-input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 6px; background: #0f172a; color: white; border: 1px solid #475569; }
+        .config-card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #334155; }
+        .setup-input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 6px; background: #0f172a; color: white; border: 1px solid #475569; box-sizing: border-box; }
         
-        /* JUGADORES */
-        .grid-players { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .player-card { background: var(--card); border-radius: 8px; border: 1px solid #475569; margin-bottom: 5px; }
-        .player-head { padding: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; }
-        .player-stats { display: none; padding: 8px; background: #111827; border-top: 1px solid #334155; justify-content: space-around; gap: 4px; }
-        .player-stats.open { display: flex; }
-        .btn-stat { flex: 1; padding: 6px; border-radius: 4px; border: none; font-size: 0.6rem; font-weight: bold; color: white; }
+        /* LISTAS */
+        .match-item { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+        .btn-action { padding: 8px 12px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; font-size: 0.7rem; }
 
         .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #334155; }
         .nav-item { color: white; opacity: 0.5; font-size: 0.7rem; text-align: center; flex: 1; cursor: pointer; }
         .nav-item.active { opacity: 1; color: var(--stellar-gold); font-weight: bold; }
         
-        @keyframes blink { 50% { opacity: 0.5; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
@@ -49,70 +38,65 @@
 
     <div id="main-console" class="control-panel" style="display:none">
         <div class="score-row">
-            <div class="team-box">
-                <span id="nameA" class="team-name">LOCAL</span>
-                <div id="scoreA" class="score-val">0</div>
-            </div>
-            <div class="timer-center">
-                <div id="game-timer" class="game-clock">90:00</div>
-                <div style="font-size:0.5rem; opacity:0.6" id="match-info-top">CANCHA - CAT</div>
-            </div>
-            <div class="team-box">
-                <span id="nameB" class="team-name">VISITA</span>
-                <div id="scoreB" class="score-val">0</div>
-            </div>
+            <div style="flex:1"><span id="nameA" class="team-name">-</span><div id="scoreA" class="score-val">0</div></div>
+            <div style="flex:1.5"><div id="game-timer" class="game-clock">90:00</div><small id="match-tag" style="font-size:0.5rem; opacity:0.5"></small></div>
+            <div style="flex:1"><span id="nameB" class="team-name">-</span><div id="scoreB" class="score-val">0</div></div>
         </div>
-        
         <div class="time-controls">
-            <button id="btn-play" onclick="toggleClock()" class="btn-t btn-master">INICIAR</button>
+            <button id="btn-play" onclick="toggleClock()" class="btn-t" style="background:var(--success)">INICIAR</button>
             <button onclick="runTO('A')" class="btn-t">TO L (<span id="toA">2</span>)</button>
             <button onclick="runHalf()" class="btn-t">MITAD</button>
             <button onclick="runTO('B')" class="btn-t">TO V (<span id="toB">2</span>)</button>
-            <button onclick="resetMatch()" class="btn-t" style="background:var(--danger); flex:0.4">R</button>
         </div>
     </div>
 
     <div id="view-config" class="view active">
-        <h2>GESTIÓN DE TORNEO</h2>
+        <h2>CONFIGURAR TORNEO</h2>
         <div class="config-card">
-            <h4>1. Categorías</h4>
-            <div style="display:flex; gap:5px">
-                <input type="text" id="cat-input" class="setup-input" placeholder="Ej: Open, Femenino">
-                <button onclick="addCat()" class="btn-t" style="background:var(--primary); width:60px">+</button>
-            </div>
-            <div id="cat-chips" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px"></div>
+            <label>Nombre del Torneo</label>
+            <input type="text" id="t-nombre" class="setup-input" placeholder="Ej: Copa Chile 2026">
+            <label>Canchas Totales</label>
+            <input type="number" id="t-canchas" class="setup-input" value="1">
         </div>
 
         <div class="config-card">
-            <h4 id="form-title">2. Crear/Editar Partido</h4>
+            <h4>Categorías</h4>
+            <div style="display:flex; gap:5px">
+                <input type="text" id="cat-input" class="setup-input" placeholder="Ej: Open, Mixed">
+                <button onclick="addCat()" class="btn-t" style="background:var(--primary); width:50px">+</button>
+            </div>
+            <div id="cat-list" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:5px"></div>
+        </div>
+
+        <div class="config-card">
+            <h4 id="form-title">Crear Partido</h4>
             <input type="hidden" id="edit-id">
-            <input type="text" id="m-equipoA" class="setup-input" placeholder="Equipo Local">
-            <input type="text" id="m-equipoB" class="setup-input" placeholder="Equipo Visita">
-            <select id="m-cat" class="setup-input"><option value="">Selecciona Categoría</option></select>
+            <input type="text" id="m-local" class="setup-input" placeholder="Equipo Local">
+            <input type="text" id="m-visita" class="setup-input" placeholder="Equipo Visita">
+            <select id="m-cat" class="setup-input"><option value="">Categoría</option></select>
             <div style="display:flex; gap:5px">
                 <input type="number" id="m-cancha" class="setup-input" placeholder="Cancha #">
                 <input type="time" id="m-hora" class="setup-input">
             </div>
-            <button onclick="saveMatch()" id="btn-save" class="btn-t" style="background:var(--success); width:100%; padding:12px; margin-top:10px">GUARDAR PARTIDO</button>
-            <button onclick="resetForm()" id="btn-cancel-edit" class="btn-t" style="display:none; width:100%; margin-top:5px">CANCELAR EDICIÓN</button>
+            <button onclick="saveMatch()" class="btn-action" style="background:var(--success); color:white; width:100%; margin-top:10px">GUARDAR PARTIDO</button>
         </div>
     </div>
 
     <div id="view-tournament" class="view">
-        <h2>PARTIDOS</h2>
+        <h2>PARTIDOS DEL DÍA</h2>
         <div id="match-list"></div>
     </div>
 
     <div id="view-sheet" class="view">
-        <div class="grid-players">
-            <div id="listA"></div>
-            <div id="listB"></div>
+        <div id="players-area" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+            <div><small id="labelA" style="color:var(--stellar-gold); font-weight:bold"></small><div id="listA"></div></div>
+            <div><small id="labelB" style="color:var(--stellar-gold); font-weight:bold"></small><div id="listB"></div></div>
         </div>
-        <button onclick="finishMatch()" class="btn-t" style="background:var(--primary); width:100%; margin-top:20px; padding:15px">FINALIZAR PARTIDO</button>
+        <button onclick="finishMatch()" class="btn-action" style="background:var(--primary); color:white; width:100%; margin-top:20px; padding:15px">CERRAR PARTIDO</button>
     </div>
 
     <div id="view-results" class="view">
-        <h2>RESULTADOS</h2>
+        <h2>RESULTADOS FINALES</h2>
         <div id="history-list"></div>
     </div>
 
@@ -132,115 +116,78 @@
         let clockInt = null;
         let timeLeft = 5400;
         let isRunning = false;
-        let categorias = ["Open", "Femenino", "Mixto"];
+        let cats = JSON.parse(localStorage.getItem('stellar_cats')) || ["Open", "Femenino"];
 
         function showView(v) {
             document.querySelectorAll('.view, .nav-item').forEach(x => x.classList.remove('active'));
             document.getElementById('view-' + v).classList.add('active');
-            if(v === 'sheet') document.getElementById('main-console').style.display = 'block';
-            else document.getElementById('main-console').style.display = 'none';
+            document.getElementById('main-console').style.display = (v === 'sheet') ? 'block' : 'none';
             if(v === 'tournament') loadMatches();
             if(v === 'results') loadHistory();
             if(v === 'config') renderCats();
         }
 
-        // --- GESTIÓN DE CONFIGURACIÓN ---
+        // --- CONFIG ---
         function addCat() {
             const val = document.getElementById('cat-input').value;
-            if(val) { categorias.push(val); document.getElementById('cat-input').value = ''; renderCats(); }
+            if(val) { cats.push(val); localStorage.setItem('stellar_cats', JSON.stringify(cats)); renderCats(); }
         }
 
         function renderCats() {
-            const container = document.getElementById('cat-chips');
-            const select = document.getElementById('m-cat');
-            container.innerHTML = categorias.map(c => `<span style="background:var(--primary); padding:3px 10px; border-radius:15px; font-size:0.7rem">${c}</span>`).join('');
-            select.innerHTML = '<option value="">Selecciona Categoría</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('cat-list').innerHTML = cats.map(c => `<span style="background:var(--primary); padding:4px 10px; border-radius:15px; font-size:0.6rem">${c}</span>`).join('');
+            document.getElementById('m-cat').innerHTML = '<option value="">Categoría</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
         async function saveMatch() {
             const id = document.getElementById('edit-id').value;
             const data = {
-                equipo_a: document.getElementById('m-equipoA').value,
-                equipo_b: document.getElementById('m-equipoB').value,
-                cancha: "Cancha " + document.getElementById('m-cancha').value,
+                equipo_a: document.getElementById('m-local').value,
+                equipo_b: document.getElementById('m-visita').value,
+                cancha: `Cancha ${document.getElementById('m-cancha').value} - ${document.getElementById('m-cat').value}`,
                 horario: document.getElementById('m-hora').value,
                 estado: 'programado'
             };
-            const cat = document.getElementById('m-cat').value;
-            data.cancha += " - " + cat;
-
-            if(id) {
-                await fetch(`${S_URL}/partidos?id=eq.${id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify(data) });
-            } else {
-                await fetch(`${S_URL}/partidos`, { method: 'POST', headers: HEAD, body: JSON.stringify(data) });
-            }
+            
+            const method = id ? 'PATCH' : 'POST';
+            const url = id ? `${S_URL}/partidos?id=eq.${id}` : `${S_URL}/partidos`;
+            
+            await fetch(url, { method, headers: HEAD, body: JSON.stringify(data) });
             resetForm();
             showView('tournament');
         }
 
         function resetForm() {
             document.getElementById('edit-id').value = '';
-            document.getElementById('form-title').innerText = "2. Crear Partido";
-            document.getElementById('btn-cancel-edit').style.display = 'none';
             document.querySelectorAll('.setup-input').forEach(i => i.value = '');
         }
 
-        // --- RELOJ Y TIEMPOS ---
-        function toggleClock() {
-            isRunning = !isRunning;
-            const btn = document.getElementById('btn-play');
-            if(isRunning) {
-                btn.innerText = "PAUSA"; btn.style.background = "var(--danger)";
-                clockInt = setInterval(() => {
-                    timeLeft--;
-                    updateClockUI();
-                }, 1000);
-            } else {
-                btn.innerText = "REANUDAR"; btn.style.background = "var(--success)";
-                clearInterval(clockInt);
-            }
-        }
-
-        function updateClockUI() {
-            const m = Math.floor(timeLeft/60), s = timeLeft%60;
-            document.getElementById('game-timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
-        }
-
-        async function runTO(side) {
-            const field = side === 'A' ? 'timeouts_a' : 'timeouts_b';
-            const currentVal = currentMatch[field] || 0;
-            if(currentVal >= 2) return alert("Sin Timeouts");
-            
-            await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [field]: currentVal + 1 }) });
-            selectMatch(currentMatch.id);
-            alert(`TIMEOUT ${side === 'A' ? 'LOCAL' : 'VISITA'} (70 seg)`);
-        }
-
-        // --- CARGA DE DATOS ---
+        // --- PARTIDOS ---
         async function loadMatches() {
             const res = await fetch(`${S_URL}/partidos?estado=neq.finalizado&order=horario.asc`, { headers: HEAD });
             const data = await res.json();
             document.getElementById('match-list').innerHTML = data.map(m => `
-                <div style="background:var(--card); padding:12px; border-radius:10px; margin-bottom:8px; border:1px solid #334155; display:flex; justify-content:space-between; align-items:center">
-                    <div onclick="selectMatch(${m.id})" style="flex:1">
+                <div class="match-item">
+                    <div>
                         <small style="color:var(--stellar-gold)">${m.horario.slice(0,5)} | ${m.cancha}</small><br>
                         <b>${m.equipo_a} vs ${m.equipo_b}</b>
                     </div>
-                    <button onclick="editMatch(${JSON.stringify(m).replace(/"/g, '&quot;')})" style="background:none; border:1px solid var(--primary); color:white; padding:5px; border-radius:5px; font-size:0.6rem">EDITAR</button>
+                    <div style="display:flex; gap:5px">
+                        <button onclick="editMatch(${JSON.stringify(m).replace(/"/g, '&quot;')})" class="btn-action" style="background:#475569; color:white">EDITAR</button>
+                        <button onclick="selectMatch(${m.id})" class="btn-action" style="background:var(--success); color:white">PLANILLAR</button>
+                    </div>
                 </div>
             `).join('');
         }
 
         function editMatch(m) {
             document.getElementById('edit-id').value = m.id;
-            document.getElementById('m-equipoA').value = m.equipo_a;
-            document.getElementById('m-equipoB').value = m.equipo_b;
+            document.getElementById('m-local').value = m.equipo_a;
+            document.getElementById('m-visita').value = m.equipo_b;
             document.getElementById('m-hora').value = m.horario;
-            document.getElementById('form-title').innerText = "EDITANDO PARTIDO";
-            document.getElementById('btn-cancel-edit').style.display = 'block';
             showView('config');
         }
 
+        // --- PLANILLA ---
         async function selectMatch(id) {
             const res = await fetch(`${S_URL}/partidos?id=eq.${id}`, { headers: HEAD });
             currentMatch = (await res.json())[0];
@@ -252,33 +199,28 @@
         function updateConsole() {
             document.getElementById('nameA').innerText = currentMatch.equipo_a;
             document.getElementById('nameB').innerText = currentMatch.equipo_b;
+            document.getElementById('labelA').innerText = currentMatch.equipo_a;
+            document.getElementById('labelB').innerText = currentMatch.equipo_b;
             document.getElementById('scoreA').innerText = currentMatch.puntos_a;
             document.getElementById('scoreB').innerText = currentMatch.puntos_b;
-            document.getElementById('match-info-top').innerText = currentMatch.cancha.toUpperCase();
+            document.getElementById('match-tag').innerText = currentMatch.cancha;
             document.getElementById('toA').innerText = 2 - (currentMatch.timeouts_a || 0);
             document.getElementById('toB').innerText = 2 - (currentMatch.timeouts_b || 0);
         }
 
         async function loadPlayers() {
             const res = await fetch(`${S_URL}/jugadores?select=*&order=numero.asc`, { headers: HEAD });
-            const jugadores = await res.json();
+            const data = await res.json();
             const lA = document.getElementById('listA'), lB = document.getElementById('listB');
             lA.innerHTML = ''; lB.innerHTML = '';
-            jugadores.forEach(j => {
-                const card = `<div class="player-card">
-                    <div class="player-head" onclick="this.nextElementSibling.classList.toggle('open')">
-                        <span>#${j.numero} ${j.nombre.split(' ')[0]}</span>
-                        <b>${j.goles||0}</b>
+            data.forEach(j => {
+                const card = `<div style="background:var(--card); margin:4px 0; border-radius:8px; border:1px solid #475569; overflow:hidden">
+                    <div onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'flex' ? 'none' : 'flex'" style="padding:8px; display:flex; justify-content:space-between; font-size:0.7rem">
+                        <span>#${j.numero} ${j.nombre.split(' ')[0]}</span><b>${j.goles||0}</b>
                     </div>
-                    <div class="player-stats">
-                        <div style="flex:1; text-align:center">
-                            <button onclick="up(${j.id},'goles',${(j.goles||0)+1},'${j.equipo}')" class="btn-stat" style="background:var(--success); width:100%">+ GOL</button>
-                            <button onclick="up(${j.id},'goles',${(j.goles||0)-1},'${j.equipo}')" class="btn-stat" style="background:var(--danger); width:100%; margin-top:2px; opacity:0.6">-</button>
-                        </div>
-                        <div style="flex:1; text-align:center">
-                            <button onclick="up(${j.id},'defensas',${(j.defensas||0)+1},'${j.equipo}')" class="btn-stat" style="background:var(--primary); width:100%">+ DEF</button>
-                            <button onclick="up(${j.id},'defensas',${(j.defensas||0)-1},'${j.equipo}')" class="btn-stat" style="background:var(--danger); width:100%; margin-top:2px; opacity:0.6">-</button>
-                        </div>
+                    <div style="display:none; padding:5px; background:#000; justify-content:space-around; gap:2px">
+                        <button onclick="up(${j.id},'goles',${(j.goles||0)+1},'${j.equipo}')" class="btn-t" style="background:var(--success); font-size:0.5rem">GOL</button>
+                        <button onclick="up(${j.id},'defensas',${(j.defensas||0)+1},'${j.equipo}')" class="btn-t" style="background:var(--primary); font-size:0.5rem">DEF</button>
                     </div>
                 </div>`;
                 if(j.equipo.toLowerCase() === currentMatch.equipo_a.toLowerCase()) lA.innerHTML += card;
@@ -287,23 +229,36 @@
         }
 
         async function up(jId, col, val, team) {
-            if(val < 0) return;
             await fetch(`${S_URL}/jugadores?id=eq.${jId}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [col]: val }) });
             if(col === 'goles') {
                 const field = team.toLowerCase() === currentMatch.equipo_a.toLowerCase() ? 'puntos_a' : 'puntos_b';
-                // Recalcular marcador real desde DB
-                const resM = await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { headers: HEAD });
-                const m = (await resM.json())[0];
-                const newScore = (val > (currentMatch[field]||0)) ? m[field]+1 : m[field]-1;
-                await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [field]: Math.max(0, newScore) }) });
+                await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [field]: (currentMatch[field]||0)+1 }) });
             }
             selectMatch(currentMatch.id);
         }
 
+        // --- RELOJ ---
+        function toggleClock() {
+            isRunning = !isRunning;
+            const btn = document.getElementById('btn-play');
+            if(isRunning) {
+                btn.innerText = "PAUSA"; btn.style.background = "var(--danger)";
+                clockInt = setInterval(() => { timeLeft--; updateClockUI(); }, 1000);
+            } else {
+                btn.innerText = "INICIAR"; btn.style.background = "var(--success)";
+                clearInterval(clockInt);
+            }
+        }
+        function updateClockUI() {
+            const m = Math.floor(timeLeft/60), s = timeLeft%60;
+            document.getElementById('game-timer').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+        }
+
         async function finishMatch() {
-            if(!confirm("¿Finalizar?")) return;
-            await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ estado: 'finalizado' }) });
-            location.reload();
+            if(confirm("¿Cerrar partido?")) {
+                await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ estado: 'finalizado' }) });
+                location.reload();
+            }
         }
 
         renderCats();
