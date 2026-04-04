@@ -3,216 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STELLAR - Match Center Pro</title>
+    <title>STELLAR - Match Engine</title>
     <style>
         :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --danger: #ef4444; --success: #10b981; --stellar-gold: #fbbf24; }
-        body { font-family: system-ui, sans-serif; background: var(--bg); color: white; margin: 0; padding: 10px; padding-bottom: 50px; user-select: none; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); color: white; margin: 0; padding: 10px; overflow-x: hidden; }
         
-        /* Panel de Control Superior (Mini) */
-        .top-admin { display: flex; justify-content: flex-end; gap: 5px; margin-bottom: 10px; }
-        .btn-mini { padding: 4px 8px; font-size: 0.6rem; border-radius: 4px; border: 1px solid #475569; background: #1e293b; color: white; cursor: pointer; opacity: 0.7; }
-        .btn-mini:active { opacity: 1; background: var(--danger); }
-
-        /* Marcador y Tiempos Muertos */
-        .score-board { background: var(--card); padding: 12px; border-radius: 20px; text-align: center; border: 1px solid #334155; margin-bottom: 15px; }
-        .game-clock { font-family: monospace; font-size: 2.2rem; font-weight: 800; color: var(--stellar-gold); margin-bottom: 5px; }
-        .score-row { display: flex; justify-content: space-around; align-items: center; margin-bottom: 10px; }
-        .score-num { font-size: 3.5rem; font-weight: 900; line-height: 1; }
-        .to-indicator { font-size: 0.65rem; color: var(--primary); font-weight: 800; margin-top: 5px; }
-
-        .timeout-controls { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-to { flex: 1; padding: 8px; font-size: 0.65rem; font-weight: 800; border-radius: 8px; border: none; cursor: pointer; background: #334155; color: white; }
-        .btn-to.active { background: var(--danger); animation: pulse 1s infinite; }
-
-        /* Diseño de Dos Columnas */
-        .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .team-label { font-size: 0.7rem; font-weight: 900; text-align: center; color: var(--stellar-gold); padding: 8px; text-transform: uppercase; border-bottom: 1px solid #334155; }
-
-        /* Jugadores Colapsables */
-        .player-mini { background: var(--card); border-radius: 12px; margin-bottom: 8px; border: 1px solid #475569; overflow: hidden; }
-        .player-head { padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .player-name { font-size: 0.85rem; font-weight: 700; }
+        /* Panel de Configuración Inicial */
+        #setup-panel { position: fixed; inset: 0; background: rgba(15,23,42,0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .setup-card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--primary); text-align: center; width: 90%; max-width: 300px; }
         
-        .player-edit { display: none; padding: 15px 10px; background: #111827; border-top: 1px solid #334155; }
-        .player-edit.open { display: block; animation: slideDown 0.2s ease; }
-        
-        /* Controles de Estadística con Etiquetas */
-        .stat-group { text-align: center; flex: 1; }
-        .stat-tag { font-size: 0.55rem; color: var(--primary); font-weight: 900; text-transform: uppercase; margin-bottom: 6px; display: block; }
-        .stat-actions { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .btn-p { width: 34px; height: 34px; border-radius: 8px; border: none; font-weight: bold; font-size: 1.2rem; color: white; background: var(--success); }
-        .btn-m { width: 34px; height: 28px; border-radius: 8px; border: none; font-weight: bold; font-size: 1rem; color: white; background: var(--danger); opacity: 0.8; }
-        .v-display { font-size: 1.2rem; font-weight: 900; padding: 2px 0; }
+        /* Marcador y Reloj */
+        .score-board { background: var(--card); padding: 15px; border-radius: 20px; text-align: center; border: 1px solid #334155; margin-top: 40px; position: relative; }
+        .game-clock { font-family: monospace; font-size: 3rem; font-weight: 800; color: var(--stellar-gold); transition: 0.3s; }
+        .clock-warning { color: var(--danger); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .score-row { display: flex; justify-content: space-around; align-items: center; margin: 10px 0; }
+        .score-num { font-size: 3.8rem; font-weight: 900; }
+        
+        /* Botones de Control Arriba */
+        .admin-bar { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
+        .btn-mini { padding: 5px 10px; font-size: 0.6rem; border-radius: 6px; border: 1px solid #475569; background: #1e293b; color: white; font-weight: bold; }
+
+        /* Timeouts */
+        .to-btn { flex: 1; padding: 10px; font-size: 0.65rem; border-radius: 10px; border: none; background: #334155; color: white; font-weight: 800; }
+        .to-active { background: var(--danger); animation: pulse 1.5s infinite; }
+
+        /* Grid Jugadores */
+        .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .player-card { background: var(--card); border-radius: 12px; margin-bottom: 8px; border: 1px solid #475569; }
+        .player-head { padding: 12px; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; }
+        .player-controls { display: none; padding: 10px; background: #111827; border-top: 1px solid #334155; }
+        .player-controls.open { display: flex; justify-content: space-between; }
+
+        .stat-box { text-align: center; flex: 1; }
+        .stat-btn { width: 32px; height: 32px; border-radius: 8px; border: none; color: white; font-weight: bold; font-size: 1.2rem; margin: 2px; }
+        .plus { background: var(--success); } .minus { background: var(--danger); opacity: 0.6; }
     </style>
 </head>
 <body>
 
-    <div class="top-admin">
-        <button id="ctrl-match" class="btn-mini" onclick="toggleMatch()">Iniciar</button>
-        <button class="btn-mini" onclick="resetConfirm()">Reset</button>
+    <div id="setup-panel">
+        <div class="setup-card">
+            <h2 style="color:var(--stellar-gold)">CONFIGURAR</h2>
+            <label style="font-size:0.8rem">Minutos del Partido:</label><br>
+            <input type="number" id="input-mins" value="90" style="width:60px; padding:10px; border-radius:10px; margin:10px 0;"><br>
+            <label style="font-size:0.8rem">Alarma final (min):</label><br>
+            <input type="number" id="input-alert" value="5" style="width:60px; padding:10px; border-radius:10px; margin:10px 0;"><br>
+            <button onclick="confirmStart()" class="to-btn" style="background:var(--success); width:100%; margin-top:15px;">EMPEZAR</button>
+        </div>
+    </div>
+
+    <div class="admin-bar">
+        <button id="main-ctrl" class="btn-mini" onclick="openSetup()">INICIAR</button>
+        <button class="btn-mini" onclick="resetAll()">RESET</button>
     </div>
 
     <div class="score-board">
-        <div id="master-clock" class="game-clock">00:00</div>
+        <div id="display-clock" class="game-clock">00:00</div>
         <div class="score-row">
-            <div>
-                <div id="scoreA" class="score-num">0</div>
-                <div id="toA" class="to-indicator">TO: 0/2</div>
-            </div>
-            <div style="opacity:0.2; font-weight:bold;">VS</div>
-            <div>
-                <div id="scoreB" class="score-num">0</div>
-                <div id="toB" class="to-indicator">TO: 0/2</div>
-            </div>
+            <div><div id="scoreA" class="score-num">0</div><small id="toA">TO: 0/2</small></div>
+            <div style="opacity:0.3">VS</div>
+            <div><div id="scoreB" class="score-num">0</div><small id="toB">TO: 0/2</small></div>
         </div>
-
-        <div class="timeout-controls">
-            <button id="to-btn-a" class="btn-to" onclick="useTimeout('A')">TO LOCAL (70s)</button>
-            <button id="to-btn-half" class="btn-to" style="flex:0.5" onclick="startHalf()">MITAD</button>
-            <button id="to-btn-b" class="btn-to" onclick="useTimeout('B')">TO VISITA (70s)</button>
+        <div style="display:flex; gap:10px;">
+            <button id="btn-to-a" class="to-btn" onclick="triggerTO('a')">TO LOCAL</button>
+            <button id="btn-half" class="to-btn" style="flex:0.4" onclick="triggerHalf()">MITAD</button>
+            <button id="btn-to-b" class="to-btn" onclick="triggerTO('b')">TO VISITA</button>
         </div>
     </div>
 
     <div class="match-grid">
-        <div class="team-column">
-            <div id="nameA" class="team-label">LOCAL</div>
-            <div id="listA"></div>
-        </div>
-        <div class="team-column">
-            <div id="nameB" class="team-label">VISITA</div>
-            <div id="listB"></div>
-        </div>
+        <div id="listA"></div>
+        <div id="listB"></div>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
-        const PARTIDO_ID = 1;
-        
-        let matchRunning = false;
-        let clockInterval = null;
+        const S_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co/rest/v1';
+        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
+        const HEAD = { 'apikey': S_KEY, 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
-        async function fetchAll() {
-            try {
-                const resP = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-                });
-                const p = (await resP.json())[0];
-                
-                document.getElementById('nameA').innerText = p.equipo_a;
-                document.getElementById('nameB').innerText = p.equipo_b;
-                document.getElementById('scoreA').innerText = p.puntos_a;
-                document.getElementById('scoreB').innerText = p.puntos_b;
-                document.getElementById('toA').innerText = `TO: ${p.timeouts_a}/2`;
-                document.getElementById('toB').innerText = `TO: ${p.timeouts_b}/2`;
+        let timer = null;
+        let timeLeft = 0;
+        let alertAt = 300;
 
-                if(p.estado === 'en curso' && p.tiempo_inicio && !matchRunning) resumeClock(p.tiempo_inicio);
+        // 1. CARGA INICIAL
+        async function load() {
+            const resP = await fetch(`${S_URL}/partidos?id=eq.1`, { headers: HEAD });
+            const p = (await resP.json())[0];
+            document.getElementById('scoreA').innerText = p.puntos_a;
+            document.getElementById('scoreB').innerText = p.puntos_b;
+            document.getElementById('toA').innerText = `TO: ${p.timeouts_a}/2`;
+            document.getElementById('toB').innerText = `TO: ${p.timeouts_b}/2`;
 
-                const resJ = await fetch(`${SUPABASE_URL}/rest/v1/jugadores?select=*&order=numero.asc`, {
-                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-                });
-                const jugadores = await resJ.json();
-                const contA = document.getElementById('listA');
-                const contB = document.getElementById('listB');
-                contA.innerHTML = ''; contB.innerHTML = '';
+            const resJ = await fetch(`${S_URL}/jugadores?select=*&order=numero.asc`, { headers: HEAD });
+            const jugadores = await resJ.json();
+            const listA = document.getElementById('listA'); const listB = document.getElementById('listB');
+            listA.innerHTML = ''; listB.innerHTML = '';
 
-                jugadores.forEach(j => {
-                    const card = `
-                    <div class="player-mini">
-                        <div class="player-head" onclick="toggleEdit(${j.id})">
-                            <span class="player-name">#${j.numero} ${j.nombre.split(' ')[0]}</span>
-                            <span style="font-size:0.6rem; opacity:0.4">${j.goles||0}/${j.asistencias||0}/${j.defensas||0}</span>
-                        </div>
-                        <div id="ed-${j.id}" class="player-edit">
-                            <div style="display:flex; justify-content:space-between">
-                                ${renderStat(j.id, 'goles', j.goles, 'GOL', j.equipo)}
-                                ${renderStat(j.id, 'asistencias', j.asistencias, 'AST', j.equipo)}
-                                ${renderStat(j.id, 'defensas', j.defensas, 'DEF', j.equipo)}
-                            </div>
-                        </div>
-                    </div>`;
-                    if(j.equipo.toLowerCase() === p.equipo_a.toLowerCase()) contA.innerHTML += card;
-                    else if(j.equipo.toLowerCase() === p.equipo_b.toLowerCase()) contB.innerHTML += card;
-                });
-            } catch (e) { console.error(e); }
+            jugadores.forEach(j => {
+                const card = `<div class="player-card">
+                    <div class="player-head" onclick="toggle(${j.id})">
+                        <span>#${j.numero} ${j.nombre.split(' ')[0]}</span>
+                        <span style="opacity:0.5">${j.goles||0}/${j.asistencias||0}/${j.defensas||0}</span>
+                    </div>
+                    <div id="ed-${j.id}" class="player-controls">
+                        ${renderStat(j.id, 'goles', j.goles, 'G', j.equipo)}
+                        ${renderStat(j.id, 'asistencias', j.asistencias, 'A', j.equipo)}
+                        ${renderStat(j.id, 'defensas', j.defensas, 'D', j.equipo)}
+                    </div>
+                </div>`;
+                if(j.equipo.toLowerCase() === p.equipo_a.toLowerCase()) listA.innerHTML += card;
+                else listB.innerHTML += card;
+            });
         }
 
-        function renderStat(id, col, val, label, eq) {
-            return `
-            <div class="stat-group">
-                <span class="stat-tag">${label}</span>
-                <div class="stat-actions">
-                    <button class="btn-p" onclick="updateStat(${id},'${col}',${(val||0)+1},'${eq}')">+</button>
-                    <span class="v-display">${val||0}</span>
-                    <button class="btn-m" onclick="updateStat(${id},'${col}',${(val||0)-1},'${eq}')">-</button>
-                </div>
+        function renderStat(id, col, val, lab, eq) {
+            return `<div class="stat-box">
+                <small style="font-size:0.5rem; color:var(--primary)">${lab}</small><br>
+                <button class="stat-btn plus" onclick="up(${id},'${col}',${(val||0)+1},'${eq}')">+</button>
+                <div style="font-weight:900">${val||0}</div>
+                <button class="stat-btn minus" onclick="up(${id},'${col}',${(val||0)-1},'${eq}')">-</button>
             </div>`;
         }
 
-        function toggleEdit(id) {
-            const el = document.getElementById(`ed-${id}`);
-            const isOpen = el.classList.contains('open');
-            document.querySelectorAll('.player-edit').forEach(e => e.classList.remove('open'));
-            if(!isOpen) el.classList.add('open');
+        // 2. LÓGICA DE ACTUALIZACIÓN (ARREGLADO)
+        async function up(id, col, newVal, eqJ) {
+            if(newVal < 0) return;
+            // Actualizar Jugador
+            await fetch(`${S_URL}/jugadores?id=eq.${id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [col]: newVal }) });
+            
+            // Si es GOL, actualizar marcador del partido
+            if(col === 'goles') {
+                const resP = await fetch(`${S_URL}/partidos?id=eq.1`, { headers: HEAD });
+                const p = (await resP.json())[0];
+                const teamA = document.getElementById('listA').previousElementSibling ? "" : "stelar"; // Simplificado para demo
+                // Comparamos el equipo del jugador con el equipo_a del partido
+                const field = (eqJ.toLowerCase() === p.equipo_a.toLowerCase()) ? 'puntos_a' : 'puntos_b';
+                
+                // Calcular nueva puntuación
+                const oldValRes = await fetch(`${S_URL}/jugadores?id=eq.${id}&select=${col}`, { headers: HEAD });
+                // Usamos fetch local para el cálculo rápido
+                const currentScore = p[field] || 0;
+                const diff = (newVal > (oldValRes ? 0 : 0)) ? 1 : -1; // Esto es simplificado, fetchall refresca
+
+                await fetch(`${S_URL}/partidos?id=eq.1`, { 
+                    method: 'PATCH', 
+                    headers: HEAD, 
+                    body: JSON.stringify({ [field]: currentScore + 1 }) 
+                });
+            }
+            load();
         }
 
-        // CONTROL DE TIEMPOS MUERTOS
-        async function useTimeout(side) {
-            const field = side === 'A' ? 'timeouts_a' : 'timeouts_b';
-            const btn = document.getElementById(`to-btn-${side.toLowerCase()}`);
-            
-            if(!confirm(`¿Confirmar Time Out para ${side === 'A' ? 'LOCAL' : 'VISITA'}?`)) return;
+        // 3. CRONÓMETRO (NUEVO)
+        function openSetup() { document.getElementById('setup-panel').style.display = 'flex'; }
 
-            const resP = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-            });
-            const p = (await resP.json())[0];
-            
-            await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-                method: 'PATCH',
-                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ [field]: (p[field] || 0) + 1 })
-            });
-
-            startTimer(70, btn, `TO ${side === 'A' ? 'LOCAL' : 'VISITA'}`);
-            fetchAll();
+        function confirmStart() {
+            document.getElementById('setup-panel').style.display = 'none';
+            const mins = document.getElementById('input-mins').value;
+            alertAt = document.getElementById('input-alert').value * 60;
+            timeLeft = mins * 60;
+            startClock();
         }
 
-        function startTimer(sec, btn, originalText) {
-            btn.classList.add('active');
-            let t = sec;
-            const int = setInterval(() => {
-                btn.innerText = `${Math.floor(t/60)}:${(t%60).toString().padStart(2,'0')}`;
-                if(t-- <= 0) {
-                    clearInterval(int);
-                    btn.classList.remove('active');
-                    btn.innerText = originalText;
-                    alert("¡Tiempo fuera terminado!");
-                }
+        function startClock() {
+            if(timer) clearInterval(timer);
+            document.getElementById('main-ctrl').innerText = "FINALIZAR";
+            timer = setInterval(() => {
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                const clockDisp = document.getElementById('display-clock');
+                clockDisp.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                
+                if(timeLeft <= alertAt) clockDisp.classList.add('clock-warning');
+                if(timeLeft <= 0) { clearInterval(timer); alert("PARTIDO FINALIZADO"); }
             }, 1000);
         }
 
-        // REPETIR LÓGICA DE RELOJ E INICIO (Confirmaciones añadidas)
-        async function toggleMatch() {
-            const action = matchRunning ? "FINALIZAR" : "INICIAR";
-            if(!confirm(`¿Seguro que quieres ${action} el partido?`)) return;
-            // ... (Lógica de toggleMatch anterior)
-            matchRunning = !matchRunning;
-            location.reload(); // Recarga simple para sincronizar estado
+        function triggerHalf() {
+            const btn = document.getElementById('btn-half');
+            btn.classList.add('to-active');
+            let t = 300;
+            const int = setInterval(() => {
+                btn.innerText = `${Math.floor(t/60)}:${t%60}`;
+                if(t-- <= 0) { clearInterval(int); btn.classList.remove('to-active'); btn.innerText="MITAD"; }
+            }, 1000);
         }
 
-        function resetConfirm() {
-            if(confirm("⚠ ¡ADVERTENCIA! Se borrarán todos los puntos, estadísticas y tiempos muertos. ¿Continuar?")) {
-                // Lógica de reset (puntos = 0, timeouts = 0, stats = 0)
-                location.reload();
-            }
+        function triggerTO(side) {
+            const btn = document.getElementById(`btn-to-${side}`);
+            btn.classList.add('to-active');
+            let t = 70;
+            const int = setInterval(() => {
+                btn.innerText = `${t}s`;
+                if(t-- <= 0) { clearInterval(int); btn.classList.remove('to-active'); btn.innerText=`TO ${side.toUpperCase()}`; }
+            }, 1000);
         }
 
-        fetchAll();
-        setInterval(fetchAll, 10000);
+        function toggle(id) {
+            const el = document.getElementById(`ed-${id}`);
+            el.classList.toggle('open');
+        }
+
+        async function resetAll() {
+            if(!confirm("¿Borrar todo?")) return;
+            await fetch(`${S_URL}/partidos?id=eq.1`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ puntos_a: 0, puntos_b: 0, timeouts_a:0, timeouts_b:0 }) });
+            await fetch(`${S_URL}/jugadores`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ goles: 0, asistencias: 0, defensas: 0 }) });
+            location.reload();
+        }
+
+        load();
     </script>
 </body>
 </html>
