@@ -113,43 +113,46 @@
         }
 
         // 2. ACTUALIZAR STATS Y MARCADOR SIMULTÁNEO
-        async function updateStat(id, col, newVal, equipoJugador) {
-            if (newVal < 0) return;
+       async function updateStat(id, col, newVal, equipoJugador) {
+    if (newVal < 0) return;
 
-            // Diferencia para saber si sumamos o restamos al marcador
-            const resOld = await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}&select=${col}`, {
-                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-            });
-            const oldData = await resOld.json();
-            const oldVal = oldData[0][col] || 0;
-            const diff = newVal - oldVal;
+    // 1. Obtener valor actual para calcular la diferencia
+    const resOld = await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}&select=${col}`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const oldData = await resOld.json();
+    const oldVal = oldData[0][col] || 0;
+    const diff = newVal - oldVal;
 
-            // Actualizar Jugador
-            await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}`, {
-                method: 'PATCH',
-                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ [col]: newVal })
-            });
+    // 2. Actualizar Jugador en Supabase
+    await fetch(`${SUPABASE_URL}/rest/v1/jugadores?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [col]: newVal })
+    });
 
-            // Si es GOL, actualizar marcador del equipo correspondiente
-            if (col === 'goles') {
-                const teamA = document.getElementById('nameA').innerText;
-                const field = (equipoJugador === teamA) ? 'puntos_a' : 'puntos_b';
-                
-                const resP = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-                });
-                const pData = await resP.json();
-                const newScore = (pData[0][field] || 0) + diff;
+    // 3. Si es GOL, actualizar marcador principal
+    if (col === 'goles') {
+        const nameA = document.getElementById('nameA').innerText.trim().toLowerCase();
+        const teamJ = equipoJugador.trim().toLowerCase();
+        
+        // Comparamos nombres sin importar mayúsculas/minúsculas
+        const field = (teamJ === nameA) ? 'puntos_a' : 'puntos_b';
+        
+        const resP = await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const pData = await resP.json();
+        const newScore = (pData[0][field] || 0) + diff;
 
-                await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
-                    method: 'PATCH',
-                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ [field]: newScore })
-                });
-            }
-            fetchAll();
-        }
+        await fetch(`${SUPABASE_URL}/rest/v1/partidos?id=eq.${PARTIDO_ID}`, {
+            method: 'PATCH',
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: newScore < 0 ? 0 : newScore })
+        });
+    }
+    fetchAll(); // Refrescar vista
+}
 
         // 3. RESETEAR TODO
         async function resetMarcador() {
