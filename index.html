@@ -3,218 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STELLAR - Match Engine</title>
+    <title>STELLAR - Federation System</title>
     <style>
         :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --danger: #ef4444; --success: #10b981; --stellar-gold: #fbbf24; }
-        body { font-family: system-ui, sans-serif; background: var(--bg); color: white; margin: 0; padding: 10px; overflow-x: hidden; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
         
-        /* Panel de Configuración Inicial */
-        #setup-panel { position: fixed; inset: 0; background: rgba(15,23,42,0.95); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .setup-card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--primary); text-align: center; width: 90%; max-width: 300px; }
+        /* Navegación Inferior */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #334155; z-index: 100; }
+        .nav-item { color: white; opacity: 0.5; font-size: 0.7rem; text-decoration: none; text-align: center; cursor: pointer; }
+        .nav-item.active { opacity: 1; color: var(--stellar-gold); }
+
+        .view { display: none; padding: 15px; }
+        .view.active { display: block; }
+
+        /* Estilos de Tarjetas de Partido */
+        .match-card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 10px; border: 1px solid #334155; }
+        .match-card h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: var(--stellar-gold); }
         
-        /* Marcador y Reloj */
-        .score-board { background: var(--card); padding: 15px; border-radius: 20px; text-align: center; border: 1px solid #334155; margin-top: 40px; position: relative; }
-        .game-clock { font-family: monospace; font-size: 3rem; font-weight: 800; color: var(--stellar-gold); transition: 0.3s; }
-        .clock-warning { color: var(--danger); animation: blink 1s infinite; }
+        /* Scoreboard & Timers (Reutilizado y mejorado) */
+        .game-clock { font-family: monospace; font-size: 2.5rem; text-align: center; color: var(--stellar-gold); margin: 10px 0; }
+        .clock-warn { color: var(--danger); animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        .score-row { display: flex; justify-content: space-around; align-items: center; margin: 10px 0; }
-        .score-num { font-size: 3.8rem; font-weight: 900; }
+        .btn-action { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 0.7rem; }
+        .btn-cancel { background: var(--danger); color: white; margin-top: 5px; width: 100%; display: none; }
+
+        /* Planilla Columnas */
+        .grid-players { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .player-item { background: var(--card); padding: 10px; border-radius: 10px; margin-bottom: 5px; font-size: 0.8rem; border: 1px solid #475569; }
         
-        /* Botones de Control Arriba */
-        .admin-bar { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
-        .btn-mini { padding: 5px 10px; font-size: 0.6rem; border-radius: 6px; border: 1px solid #475569; background: #1e293b; color: white; font-weight: bold; }
-
-        /* Timeouts */
-        .to-btn { flex: 1; padding: 10px; font-size: 0.65rem; border-radius: 10px; border: none; background: #334155; color: white; font-weight: 800; }
-        .to-active { background: var(--danger); animation: pulse 1.5s infinite; }
-
-        /* Grid Jugadores */
-        .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .player-card { background: var(--card); border-radius: 12px; margin-bottom: 8px; border: 1px solid #475569; }
-        .player-head { padding: 12px; display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; }
-        .player-controls { display: none; padding: 10px; background: #111827; border-top: 1px solid #334155; }
-        .player-controls.open { display: flex; justify-content: space-between; }
-
-        .stat-box { text-align: center; flex: 1; }
-        .stat-btn { width: 32px; height: 32px; border-radius: 8px; border: none; color: white; font-weight: bold; font-size: 1.2rem; margin: 2px; }
-        .plus { background: var(--success); } .minus { background: var(--danger); opacity: 0.6; }
+        /* Formularios */
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div id="setup-panel">
-        <div class="setup-card">
-            <h2 style="color:var(--stellar-gold)">CONFIGURAR</h2>
-            <label style="font-size:0.8rem">Minutos del Partido:</label><br>
-            <input type="number" id="input-mins" value="90" style="width:60px; padding:10px; border-radius:10px; margin:10px 0;"><br>
-            <label style="font-size:0.8rem">Alarma final (min):</label><br>
-            <input type="number" id="input-alert" value="5" style="width:60px; padding:10px; border-radius:10px; margin:10px 0;"><br>
-            <button onclick="confirmStart()" class="to-btn" style="background:var(--success); width:100%; margin-top:15px;">EMPEZAR</button>
+    <div id="view-tournament" class="view active">
+        <h2 style="color:var(--stellar-gold)">TORNEO</h2>
+        <div class="match-card">
+            <h4>Nuevo Partido</h4>
+            <input type="text" id="new-team-a" placeholder="Equipo Local (ej: Stelar)">
+            <input type="text" id="new-team-b" placeholder="Equipo Visita (ej: Revolución)">
+            <input type="text" id="new-cancha" placeholder="Cancha (ej: Cancha 1)">
+            <button onclick="createMatch()" class="btn-action" style="background:var(--success); width:100%">CREAR Y PLANILLAR</button>
+        </div>
+        <div id="active-matches"></div>
+    </div>
+
+    <div id="view-sheet" class="view">
+        <div class="match-card" style="text-align: center;">
+            <div id="sheet-cancha" style="font-size: 0.7rem; opacity: 0.6;">CANCHA 1</div>
+            <div id="main-timer" class="game-clock">00:00</div>
+            <div style="display:flex; justify-content:space-around; font-size:2.5rem; font-weight:900;">
+                <span id="scoreA">0</span> : <span id="scoreB">0</span>
+            </div>
+            <div style="display:flex; gap:5px; margin-top:10px;">
+                <button id="btn-to-a" class="btn-action" style="flex:1; background:#334155" onclick="runTO('A')">TO LOCAL</button>
+                <button id="btn-half" class="btn-action" style="flex:0.6; background:#334155" onclick="runHalf()">MITAD</button>
+                <button id="btn-to-b" class="btn-action" style="flex:1; background:#334155" onclick="runTO('B')">TO VISITA</button>
+            </div>
+            <button id="cancel-to" class="btn-action btn-cancel" onclick="stopTimers()">CANCELAR TIEMPO</button>
+        </div>
+
+        <div class="grid-players">
+            <div id="sheet-listA"></div>
+            <div id="sheet-listB"></div>
+        </div>
+        
+        <div class="match-card" style="margin-top:20px;">
+            <button onclick="finishMatch()" class="btn-action" style="background:var(--danger); width:100%">FINALIZAR PARTIDO</button>
         </div>
     </div>
 
-    <div class="admin-bar">
-        <button id="main-ctrl" class="btn-mini" onclick="openSetup()">INICIAR</button>
-        <button class="btn-mini" onclick="resetAll()">RESET</button>
+    <div id="view-results" class="view">
+        <h2 style="color:var(--stellar-gold)">HISTORIAL</h2>
+        <div id="finished-matches"></div>
+        <button onclick="exportData()" class="btn-action" style="background:var(--primary); width:100%; margin-top:10px;">EXPORTAR TODO (CSV)</button>
     </div>
 
-    <div class="score-board">
-        <div id="display-clock" class="game-clock">00:00</div>
-        <div class="score-row">
-            <div><div id="scoreA" class="score-num">0</div><small id="toA">TO: 0/2</small></div>
-            <div style="opacity:0.3">VS</div>
-            <div><div id="scoreB" class="score-num">0</div><small id="toB">TO: 0/2</small></div>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button id="btn-to-a" class="to-btn" onclick="triggerTO('a')">TO LOCAL</button>
-            <button id="btn-half" class="to-btn" style="flex:0.4" onclick="triggerHalf()">MITAD</button>
-            <button id="btn-to-b" class="to-btn" onclick="triggerTO('b')">TO VISITA</button>
-        </div>
-    </div>
-
-    <div class="match-grid">
-        <div id="listA"></div>
-        <div id="listB"></div>
-    </div>
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="showView('tournament', this)">🏆 Torneo</div>
+        <div class="nav-item" onclick="showView('sheet', this)">📋 Planilla</div>
+        <div class="nav-item" onclick="showView('results', this)">📊 Resultados</div>
+    </nav>
 
     <script>
         const S_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co/rest/v1';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
         const HEAD = { 'apikey': S_KEY, 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
-        let timer = null;
-        let timeLeft = 0;
-        let alertAt = 300;
+        let currentMatchID = 1;
+        let timerInt = null;
+        let runningTO = false;
 
-        // 1. CARGA INICIAL
-        async function load() {
-            const resP = await fetch(`${S_URL}/partidos?id=eq.1`, { headers: HEAD });
+        function showView(id, el) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('view-' + id).classList.add('active');
+            el.classList.add('active');
+            if(id === 'sheet') loadPlanilla();
+            if(id === 'results') loadHistory();
+        }
+
+        // --- LÓGICA DE PARTIDOS ---
+        async function createMatch() {
+            const a = document.getElementById('new-team-a').value;
+            const b = document.getElementById('new-team-b').value;
+            const c = document.getElementById('new-cancha').value;
+            
+            const res = await fetch(`${S_URL}/partidos`, {
+                method: 'POST',
+                headers: HEAD,
+                body: JSON.stringify({ equipo_a: a, equipo_b: b, cancha: c, estado: 'programado' })
+            });
+            const data = await res.json();
+            currentMatchID = data[0].id;
+            alert("Partido creado. Ve a la pestaña Planilla.");
+        }
+
+        // --- LÓGICA DE PLANILLA ---
+        async function loadPlanilla() {
+            const resP = await fetch(`${S_URL}/partidos?id=eq.${currentMatchID}`, { headers: HEAD });
             const p = (await resP.json())[0];
-            document.getElementById('scoreA').innerText = p.puntos_a;
-            document.getElementById('scoreB').innerText = p.puntos_b;
-            document.getElementById('toA').innerText = `TO: ${p.timeouts_a}/2`;
-            document.getElementById('toB').innerText = `TO: ${p.timeouts_b}/2`;
+            document.getElementById('scoreA').innerText = p.puntos_a || 0;
+            document.getElementById('scoreB').innerText = p.puntos_b || 0;
+            document.getElementById('sheet-cancha').innerText = p.cancha;
 
-            const resJ = await fetch(`${S_URL}/jugadores?select=*&order=numero.asc`, { headers: HEAD });
+            const resJ = await fetch(`${S_URL}/jugadores?select=*`, { headers: HEAD });
             const jugadores = await resJ.json();
-            const listA = document.getElementById('listA'); const listB = document.getElementById('listB');
+            const listA = document.getElementById('sheet-listA');
+            const listB = document.getElementById('sheet-listB');
             listA.innerHTML = ''; listB.innerHTML = '';
 
             jugadores.forEach(j => {
-                const card = `<div class="player-card">
-                    <div class="player-head" onclick="toggle(${j.id})">
-                        <span>#${j.numero} ${j.nombre.split(' ')[0]}</span>
-                        <span style="opacity:0.5">${j.goles||0}/${j.asistencias||0}/${j.defensas||0}</span>
-                    </div>
-                    <div id="ed-${j.id}" class="player-controls">
-                        ${renderStat(j.id, 'goles', j.goles, 'G', j.equipo)}
-                        ${renderStat(j.id, 'asistencias', j.asistencias, 'A', j.equipo)}
-                        ${renderStat(j.id, 'defensas', j.defensas, 'D', j.equipo)}
-                    </div>
+                const item = `<div class="player-item" onclick="addPoint(${j.id}, '${j.equipo}')">
+                    #${j.numero} ${j.nombre.split(' ')[0]} <br>
+                    <span style="font-size:0.6rem; opacity:0.5">G: ${j.goles||0} A: ${j.asistencias||0}</span>
                 </div>`;
-                if(j.equipo.toLowerCase() === p.equipo_a.toLowerCase()) listA.innerHTML += card;
-                else listB.innerHTML += card;
+                if(j.equipo.toLowerCase() === p.equipo_a.toLowerCase()) listA.innerHTML += item;
+                else if(j.equipo.toLowerCase() === p.equipo_b.toLowerCase()) listB.innerHTML += item;
             });
         }
 
-        function renderStat(id, col, val, lab, eq) {
-            return `<div class="stat-box">
-                <small style="font-size:0.5rem; color:var(--primary)">${lab}</small><br>
-                <button class="stat-btn plus" onclick="up(${id},'${col}',${(val||0)+1},'${eq}')">+</button>
-                <div style="font-weight:900">${val||0}</div>
-                <button class="stat-btn minus" onclick="up(${id},'${col}',${(val||0)-1},'${eq}')">-</button>
-            </div>`;
+        // --- CRONÓMETROS Y CANCELACIÓN ---
+        function runTO(side) {
+            if(runningTO) return;
+            const btn = document.getElementById(side === 'A' ? 'btn-to-a' : 'btn-to-b');
+            startCountdown(70, btn, "TO " + side);
         }
 
-        // 2. LÓGICA DE ACTUALIZACIÓN (ARREGLADO)
-        async function up(id, col, newVal, eqJ) {
-            if(newVal < 0) return;
-            // Actualizar Jugador
-            await fetch(`${S_URL}/jugadores?id=eq.${id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [col]: newVal }) });
-            
-            // Si es GOL, actualizar marcador del partido
-            if(col === 'goles') {
-                const resP = await fetch(`${S_URL}/partidos?id=eq.1`, { headers: HEAD });
-                const p = (await resP.json())[0];
-                const teamA = document.getElementById('listA').previousElementSibling ? "" : "stelar"; // Simplificado para demo
-                // Comparamos el equipo del jugador con el equipo_a del partido
-                const field = (eqJ.toLowerCase() === p.equipo_a.toLowerCase()) ? 'puntos_a' : 'puntos_b';
-                
-                // Calcular nueva puntuación
-                const oldValRes = await fetch(`${S_URL}/jugadores?id=eq.${id}&select=${col}`, { headers: HEAD });
-                // Usamos fetch local para el cálculo rápido
-                const currentScore = p[field] || 0;
-                const diff = (newVal > (oldValRes ? 0 : 0)) ? 1 : -1; // Esto es simplificado, fetchall refresca
-
-                await fetch(`${S_URL}/partidos?id=eq.1`, { 
-                    method: 'PATCH', 
-                    headers: HEAD, 
-                    body: JSON.stringify({ [field]: currentScore + 1 }) 
-                });
-            }
-            load();
-        }
-
-        // 3. CRONÓMETRO (NUEVO)
-        function openSetup() { document.getElementById('setup-panel').style.display = 'flex'; }
-
-        function confirmStart() {
-            document.getElementById('setup-panel').style.display = 'none';
-            const mins = document.getElementById('input-mins').value;
-            alertAt = document.getElementById('input-alert').value * 60;
-            timeLeft = mins * 60;
-            startClock();
-        }
-
-        function startClock() {
-            if(timer) clearInterval(timer);
-            document.getElementById('main-ctrl').innerText = "FINALIZAR";
-            timer = setInterval(() => {
-                timeLeft--;
-                const m = Math.floor(timeLeft / 60);
-                const s = timeLeft % 60;
-                const clockDisp = document.getElementById('display-clock');
-                clockDisp.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-                
-                if(timeLeft <= alertAt) clockDisp.classList.add('clock-warning');
-                if(timeLeft <= 0) { clearInterval(timer); alert("PARTIDO FINALIZADO"); }
-            }, 1000);
-        }
-
-        function triggerHalf() {
+        function runHalf() {
             const btn = document.getElementById('btn-half');
-            btn.classList.add('to-active');
-            let t = 300;
-            const int = setInterval(() => {
-                btn.innerText = `${Math.floor(t/60)}:${t%60}`;
-                if(t-- <= 0) { clearInterval(int); btn.classList.remove('to-active'); btn.innerText="MITAD"; }
+            startCountdown(300, btn, "MITAD");
+        }
+
+        function startCountdown(sec, btn, originalText) {
+            runningTO = true;
+            document.getElementById('cancel-to').style.display = 'block';
+            let t = sec;
+            btn.style.background = 'var(--danger)';
+            timerInt = setInterval(() => {
+                btn.innerText = `${Math.floor(t/60)}:${(t%60).toString().padStart(2,'0')}`;
+                if(t-- <= 0) stopTimers();
             }, 1000);
         }
 
-        function triggerTO(side) {
-            const btn = document.getElementById(`btn-to-${side}`);
-            btn.classList.add('to-active');
-            let t = 70;
-            const int = setInterval(() => {
-                btn.innerText = `${t}s`;
-                if(t-- <= 0) { clearInterval(int); btn.classList.remove('to-active'); btn.innerText=`TO ${side.toUpperCase()}`; }
-            }, 1000);
+        function stopTimers() {
+            clearInterval(timerInt);
+            runningTO = false;
+            document.getElementById('cancel-to').style.display = 'none';
+            document.querySelectorAll('.btn-action').forEach(b => b.style.background = '#334155');
+            document.getElementById('btn-to-a').innerText = "TO LOCAL";
+            document.getElementById('btn-to-b').innerText = "TO VISITA";
+            document.getElementById('btn-half').innerText = "MITAD";
         }
 
-        function toggle(id) {
-            const el = document.getElementById(`ed-${id}`);
-            el.classList.toggle('open');
-        }
-
+        // --- RESET Y CIERRE ---
         async function resetAll() {
-            if(!confirm("¿Borrar todo?")) return;
-            await fetch(`${S_URL}/partidos?id=eq.1`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ puntos_a: 0, puntos_b: 0, timeouts_a:0, timeouts_b:0 }) });
-            await fetch(`${S_URL}/jugadores`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ goles: 0, asistencias: 0, defensas: 0 }) });
-            location.reload();
+            if(!confirm("¿Resetear estadísticas de jugadores a 0?")) return;
+            await fetch(`${S_URL}/jugadores`, { 
+                method: 'PATCH', 
+                headers: HEAD, 
+                body: JSON.stringify({ goles: 0, asistencias: 0, defensas: 0 }) 
+            });
+            loadPlanilla();
         }
 
-        load();
+        async function finishMatch() {
+            if(!confirm("¿Finalizar y guardar partido?")) return;
+            await fetch(`${S_URL}/partidos?id=eq.${currentMatchID}`, {
+                method: 'PATCH',
+                headers: HEAD,
+                body: JSON.stringify({ estado: 'finalizado' })
+            });
+            showView('results', document.querySelectorAll('.nav-item')[2]);
+        }
+
+        loadPlanilla();
     </script>
 </body>
 </html>
