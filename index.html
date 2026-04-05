@@ -273,26 +273,61 @@
 
         // CARGAR JUGADORES (Si tienes la tabla 'jugadores')
         async function loadPlayers() {
-            const lA = document.getElementById('listA'), lB = document.getElementById('listB');
-            lA.innerHTML = '<button onclick="addPoint(\'a\')" class="btn-t" style="background:var(--primary); width:100%">+ GOL LOCAL</button>';
-            lB.innerHTML = '<button onclick="addPoint(\'b\')" class="btn-t" style="background:var(--primary); width:100%">+ GOL VISITA</button>';
+    const lA = document.getElementById('listA');
+    const lB = document.getElementById('listB');
+    
+    // 1. Limpiamos y ponemos estado de carga
+    lA.innerHTML = '<p style="font-size:0.6rem; opacity:0.5">Buscando jugadores...</p>';
+    lB.innerHTML = '<p style="font-size:0.6rem; opacity:0.5">Buscando jugadores...</p>';
+
+    try {
+        // 2. Construimos la consulta a Supabase
+        // Filtramos para que traiga solo jugadores del Equipo A o del Equipo B
+        const equipoA = currentMatch.equipo_a;
+        const equipoB = currentMatch.equipo_b;
+        
+        const url = `${S_URL}/jugadores?or=(equipo.eq."${equipoA}",equipo.eq."${equipoB}")&order=numero.asc`;
+        
+        const res = await fetch(url, { headers: HEAD });
+        const jugadores = await res.json();
+
+        // Si no hay jugadores, avisamos
+        if (!jugadores || jugadores.length === 0) {
+            lA.innerHTML = '<p style="font-size:0.6rem; color:var(--danger)">No hay roster en DB</p>';
+            lB.innerHTML = '<p style="font-size:0.6rem; color:var(--danger)">No hay roster en DB</p>';
+            console.log("No se encontraron jugadores para:", equipoA, "o", equipoB);
+            return;
         }
 
-        // SUMAR PUNTOS
-        async function addPoint(team) {
-            if(!currentMatch) return;
-            const field = team === 'a' ? 'puntos_a' : 'puntos_b';
-            const newVal = (currentMatch[field] || 0) + 1;
+        lA.innerHTML = ''; 
+        lB.innerHTML = '';
+
+        jugadores.forEach(j => {
+            const card = `
+                <div class="player-row" style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; margin-bottom:5px; padding:8px; border-radius:8px;">
+                    <div style="font-size:0.7rem">
+                        <b>#${j.numero}</b> ${j.nombre.split(' ')[0]}
+                        <br><span class="stat-badge" style="color:var(--success)">G: ${j.goles || 0} | D: ${j.defensas || 0}</span>
+                    </div>
+                    <div style="display:flex; gap:4px">
+                        <button onclick="registerStat(${j.id}, 'goles', '${j.equipo}')" style="background:var(--success); border:none; border-radius:4px; padding:5px 8px; font-size:0.6rem; cursor:pointer; font-weight:bold;">GOL</button>
+                        <button onclick="registerStat(${j.id}, 'defensas', '${j.equipo}')" style="background:var(--primary); border:none; border-radius:4px; padding:5px 8px; font-size:0.6rem; cursor:pointer; color:white; font-weight:bold;">DEF</button>
+                    </div>
+                </div>`;
             
-            await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { 
-                method: 'PATCH', 
-                headers: HEAD, 
-                body: JSON.stringify({ [field]: newVal }) 
-            });
-            
-            currentMatch[field] = newVal;
-            document.getElementById('score' + team.toUpperCase()).innerText = newVal;
-        }
+            // Comparación minuciosa (quitando espacios en blanco por si acaso)
+            if (j.equipo.trim() === equipoA.trim()) {
+                lA.innerHTML += card;
+            } else if (j.equipo.trim() === equipoB.trim()) {
+                lB.innerHTML += card;
+            }
+        });
+
+    } catch (e) {
+        console.error("Error crítico en loadPlayers:", e);
+        lA.innerHTML = '<p style="color:red">Error de conexión</p>';
+    }
+}
 
         // RELOJ
         function toggleClock() {
