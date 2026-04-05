@@ -19,7 +19,8 @@
             background: var(--bg); 
             color: white; 
             margin: 0; 
-            padding-bottom: 90px; 
+            padding-bottom: 100px; 
+            overflow-x: hidden;
         }
 
         /* CONSOLA DE ARBITRAJE */
@@ -30,28 +31,42 @@
             position: sticky; 
             top: 0; 
             z-index: 100; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         .score-row { display: flex; align-items: center; justify-content: space-between; text-align: center; }
-        .game-clock { font-family: monospace; font-size: 2.5rem; font-weight: 800; color: white; }
-        .team-name { font-size: 0.65rem; font-weight: 900; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .score-val { font-size: 3rem; font-weight: 900; line-height: 1; }
+        .game-clock { font-family: monospace; font-size: 2.8rem; font-weight: 800; color: white; line-height: 1; }
+        .team-name { font-size: 0.6rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+        .score-val { font-size: 3.5rem; font-weight: 900; line-height: 1; }
         
-        .time-controls { display: flex; gap: 8px; margin-top: 12px; }
+        /* BOTONES DE TIEMPO */
+        .time-controls { display: flex; gap: 8px; margin-top: 10px; }
         .btn-t { 
-            flex: 1; padding: 10px; border-radius: 8px; border: none; 
-            font-size: 0.65rem; font-weight: bold; cursor: pointer; 
+            flex: 1; padding: 12px; border-radius: 8px; border: none; 
+            font-size: 0.7rem; font-weight: bold; cursor: pointer; 
             color: white; text-transform: uppercase; background: #334155; 
         }
 
-        /* VISTAS */
-        .view { display: none; padding: 20px; animation: fadeIn 0.3s; }
-        .view.active { display: block; }
-        
-        /* LISTADO DE JUGADORES */
-        .player-row {
-            background: var(--card); 
-            border: 1px solid #334155; 
-            padding: 12px; 
-            border-radius: 10px; 
-            margin-bottom: 8px; 
+        /* TARJETAS DE PARTIDOS Y JUGADORES */
+        .match-card {
+            background: var(--card);
+            border-left: 5px solid var(--primary);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .player-row {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .stat-badge { 
+            background: rgba(57, 255, 20, 0.1); 
+            color: var(--
