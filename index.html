@@ -3,70 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIDELINE - Tournament Admin</title>
+    <title>SIDELINE MVP</title>
     <style>
-        :root { 
-            --primary: #3b82f6; 
-            --bg: #0f172a; 
-            --card: #1e293b; 
-            --danger: #ef4444; 
-            --success: #39FF14; 
-            --stellar-gold: #fbbf24; 
-        }
+        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --success: #39FF14; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
         
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: var(--bg); 
-            color: white; 
-            margin: 0; 
-            padding-bottom: 100px; 
-            overflow-x: hidden;
-        }
-
-        /* CONSOLA DE ARBITRAJE */
-        .control-panel { 
-            background: #000; 
-            padding: 15px; 
-            border-bottom: 3px solid var(--primary); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-        .score-row { display: flex; align-items: center; justify-content: space-between; text-align: center; }
-        .game-clock { font-family: monospace; font-size: 2.8rem; font-weight: 800; color: white; line-height: 1; }
-        .team-name { font-size: 0.6rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
-        .score-val { font-size: 3.5rem; font-weight: 900; line-height: 1; }
-        
-        /* BOTONES DE TIEMPO */
-        .time-controls { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-t { 
-            flex: 1; padding: 12px; border-radius: 8px; border: none; 
-            font-size: 0.7rem; font-weight: bold; cursor: pointer; 
-            color: white; text-transform: uppercase; background: #334155; 
-        }
-
-        /* TARJETAS DE PARTIDOS Y JUGADORES */
+        /* Estilo de las tarjetas para que RESALTEN */
         .match-card {
             background: var(--card);
             border-left: 5px solid var(--primary);
-            padding: 18px;
-            border-radius: 12px;
+            padding: 20px;
             margin-bottom: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .player-row {
-            background: #0f172a;
-            border: 1px solid #334155;
-            padding: 12px;
             border-radius: 10px;
-            margin-bottom: 8px;
-            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
-        .stat-badge { 
-            background: rgba(57, 255, 20, 0.1); 
-            color: var(--
+        
+        .header { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        .btn-refresh { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 5px; width: 100%; cursor: pointer; margin-bottom: 20px; }
+        
+        /* Consola de errores visible en pantalla */
+        #debug-console { 
+            background: #000; color: #39FF14; font-family: monospace; 
+            font-size: 10px; padding: 10px; border-radius: 5px; 
+            margin-top: 20px; max-height: 150px; overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>SIDELINE 🏆</h1>
+        <p id="status-text">Estado: Iniciando...</p>
+    </div>
+
+    <button class="btn-refresh" onclick="loadMatches()">🔄 FORZAR CARGA DE DATOS</button>
+
+    <div id="match-list">
+        <p style="opacity: 0.5">Esperando datos de Supabase...</p>
+    </div>
+
+    <div id="debug-console">
+        <div>> Sistema listo.</div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN (Tus credenciales directas)
+        const S_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co/rest/v1';
+        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
+        
+        const log = (msg) => {
+            const consoleDiv = document.getElementById('debug-console');
+            consoleDiv.innerHTML += `<div>> ${msg}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+
+        async function loadMatches() {
+            log("Intentando conectar a Supabase...");
+            document.getElementById('status-text').innerText = "Estado: Conectando...";
+            
+            const list = document.getElementById('match-list');
+            
+            try {
+                const response = await fetch(`${S_URL}/partidos?select=*`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': S_KEY,
+                        'Authorization': `Bearer ${S_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                log(`Respuesta recibida: ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                log(`Partidos encontrados: ${data.length}`);
+
+                if (data.length === 0) {
+                    list.innerHTML = "<p>No hay partidos en la base de datos. (¿Activaste el RLS en Supabase?)</p>";
+                    document.getElementById('status-text').innerText = "Estado: Sin datos";
+                } else {
+                    list.innerHTML = data.map(m => `
+                        <div class="match-card">
+                            <b style="font-size: 1.2rem">${m.equipo_a} vs ${m.equipo_b}</b><br>
+                            <span style="color: #fbbf24">🕒 ${m.horario || '--:--'}</span>
+                        </div>
+                    `).join('');
+                    document.getElementById('status-text').innerText = "Estado: Datos cargados";
+                }
+
+            } catch (error) {
+                log(`ERROR: ${error.message}`);
+                document.getElementById('status-text').innerText = "Estado: Error de conexión";
+                list.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Ejecutar carga al iniciar
+        window.onload = loadMatches;
+    </script>
+</body>
+</html>
