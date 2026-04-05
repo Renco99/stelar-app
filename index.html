@@ -1,16 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Sideline - Mesa de Control</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIDELINE - Tournament Management</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; }
-        .btn-gol { background: #39FF14; color: black; padding: 20px; font-size: 24px; border-radius: 10px; border: none; cursor: pointer; }
+        /* Ajustamos los colores a tu Manual de Marca */
+        :root { 
+            --sideline-blue: #3b82f6; 
+            --pitch-green: #39FF14; /* Verde neón para acción */
+            --bg: #0f172a; 
+            --card: #1e293b; 
+            --danger: #ef4444; 
+            --warning: #fbbf24; /* Ámbar para pausas */
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            color: white; 
+            margin: 0; 
+            padding-bottom: 90px; 
+        }
+
+        /* CONSOLA SUPERIOR (Mesa de Control) */
+        .control-panel { 
+            background: #000; 
+            padding: 15px; 
+            border-bottom: 3px solid var(--sideline-blue); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+
+        .score-row { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            text-align: center; 
+        }
+
+        /* Reloj más grande y legible */
+        .game-clock { 
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 3rem; 
+            font-weight: 800; 
+            color: white; 
+        }
+
+        /* Estilo para los botones de acción inmediata */
+        .btn-main { 
+            flex: 1; 
+            padding: 12px; 
+            border-radius: 10px; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-size: 0.8rem;
+        }
+
+        /* INDICADOR DE RATIO (Exclusivo de Sideline) */
+        .ratio-indicator {
+            background: var(--sideline-blue);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        /* VISTAS */
+        .view { display: none; padding: 20px; }
+        .view.active { display: block; }
+
+        /* BOTONES DE NAVEGACIÓN INFERIOR */
+        .nav-bar { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            background: var(--card); 
+            display: flex; 
+            justify-content: space-around; 
+            padding: 15px 0; 
+            border-top: 1px solid #334155; 
+        }
+        .nav-item { text-align: center; font-size: 0.7rem; opacity: 0.6; cursor: pointer; color: white; }
+        .nav-item.active { opacity: 1; color: var(--pitch-green); font-weight: bold; }
+
+        /* TARJETAS DE JUGADORES */
+        .player-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
-    <h1>SIDELINE</h1>
-    <div id="marcador">0 - 0</div>
-    <br>
-    <button class="btn-gol" onclick="alert('¡Gol anotado!')">ANOTAR GOL</button>
-</body>
-</html>
+
+    <div id="main-console" class="control-panel" style="display:none">
+        <center>
+            <div id="ratio-display" class="ratio-indicator" onclick="toggleRatio()">RATIO: 4F / 3M</div>
+        </center>
+        
+        <div class="score-row">
+            <div style="flex:1">
+                <span id="nameA" style="color:var(--sideline-blue); font-weight:900; font-size:0.8rem;">LOCAL</span>
+                <div id="scoreA" style="font-size:3rem; font-weight:900;">0</div>
+            </div>
+            
+            <div style="flex:1.5">
+                <div id="game-timer" class="game-clock">90:00</div>
+                <div id="match-tag" style="font-size:0.6rem; opacity:0.6; text-transform:uppercase;">CANCHA 1</div>
+            </div>
+            
+            <div style="flex:1">
+                <span id="nameB" style="color:var(--sideline-blue); font-weight:900; font-size:0.8rem;">VISITA</span>
+                <div id="scoreB" style="font-size:3rem; font-weight:900;">0</div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:15px;">
+            <button id="btn-play" onclick="toggleClock()" class="btn-main" style="background:var(--pitch-green); color:black;">INICIAR</button>
+            <button onclick="alert('Time-out solicitado')" class="btn-main" style="background:#334155; color:white;">TIME-OUT</button>
+        </div>
+    </div>
+
+    <div id="view-tournament" class="view active">
+        <h2>PARTIDOS ACTIVOS</h2>
+        <div id="match-list">
+            </div>
+    </div>
+
+    <div id="view-sheet" class="view">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div>
+                <h4 id
