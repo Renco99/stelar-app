@@ -3,267 +3,346 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SIDELINE PRO - Elite Control</title>
+    <title>SIDELINE PRO 9.0</title>
     <style>
         :root { --primary: #3b82f6; --bg: #020617; --card: #1e293b; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --stellar-gold: #fbbf24; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; touch-action: manipulation; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
         
-        .header-mesa { background: #000; padding: 15px 10px; border-bottom: 3px solid var(--primary); position: sticky; top:0; z-index:100; }
-        .score-grid { display: grid; grid-template-columns: 1fr 1.5fr 1fr; align-items: stretch; text-align: center; gap: 5px; }
-        .score-num { font-size: 4rem; font-weight: 900; line-height: 0.9; margin: 5px 0; }
-        .team-name-big { font-size: 0.9rem; font-weight: 900; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .header-mesa { background: #000; padding: 15px 10px; border-bottom: 3px solid #334155; position: sticky; top:0; z-index:100; }
+        .score-grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; text-align: center; gap: 8px; }
+        .team-name { font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+        .score-num { font-size: 3.2rem; font-weight: 900; line-height: 1; }
+        .score-container { position: relative; height: 60px; display: flex; align-items: center; justify-content: center; }
 
-        /* T.O. SECTION */
-        .to-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-        .to-dots { display: flex; gap: 5px; margin-bottom: 6px; }
-        .to-dot { width: 12px; height: 12px; border-radius: 50%; background: #334155; border: 1px solid #475569; }
-        .to-dot.active { background: var(--stellar-gold); box-shadow: 0 0 8px var(--stellar-gold); border: none; }
-        .btn-to-action { background: #1e293b; border: 1px solid #334155; color: white; font-size: 0.6rem; padding: 8px 0; border-radius: 4px; font-weight: bold; width: 90%; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; margin-top: 10px; }
+        .data-table th { background: #1e293b; color: var(--primary); padding: 10px 4px; text-align: center; cursor: pointer; border-bottom: 2px solid #334155; }
+        .data-table td { padding: 10px 4px; border-bottom: 1px solid #1e293b; text-align: center; }
+        .txt-left { text-align: left !important; padding-left: 5px !important; }
 
-        /* CENTER UNIT */
-        .center-controls { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 5px; }
-        .top-btns { display: flex; gap: 4px; width: 100%; justify-content: center; margin-bottom: 10px; }
-        .btn-header { flex: 1; max-width: 70px; padding: 10px 0; border: none; border-radius: 4px; font-weight: 900; font-size: 0.7rem; color: black; text-transform: uppercase; }
-        .timer-big { font-family: 'Courier New', monospace; font-size: 4.5rem; color: #4ade80; font-weight: 900; line-height: 0.8; letter-spacing: -3px; margin: 10px 0; }
+        .match-card { background: var(--card); padding: 15px; border-radius: 12px; margin: 10px; border-left: 5px solid #334155; }
+        .status-badge { font-size: 9px; padding: 3px 6px; border-radius: 4px; background: #000; font-weight: 900; float: right; }
 
-        /* MODAL SOS CUSTOM */
-        #sos-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
-        .sos-content { background:var(--card); padding:20px; border-radius:15px; width:80%; text-align:center; border: 2px solid var(--warning); }
-        .sos-btn { width:100%; padding:15px; margin:10px 0; border:none; border-radius:10px; font-weight:900; font-size:1.1rem; color:black; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; background: #000; display: flex; border-top: 1px solid #334155; z-index: 2000; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 900; color: #64748b; text-transform: uppercase; }
+        .nav-item.active { color: var(--primary); border-top: 3px solid var(--primary); }
 
-        /* ROSTERS */
-        .roster-container { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; align-items: start; }
-        .player-item { background: var(--card); border-radius: 6px; margin-bottom: 6px; overflow: hidden; border-left: 4px solid var(--primary); }
-        .player-header { padding: 14px 10px; font-weight: bold; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
-        .p-stats-summary { font-size: 0.75rem; color: var(--stellar-gold); font-family: monospace; font-weight: 900; background: rgba(0,0,0,0.4); padding: 3px 6px; border-radius: 4px; }
-        
-        .action-drawer { display: none; background: rgba(0,0,0,0.6); padding: 15px 10px; border-top: 1px solid #334155; }
-        .stat-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .btn-wrap { display: flex; gap: 2px; }
-        .btn-op { width: 45px; height: 45px; border: none; color: white; font-weight: bold; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
-        .btn-minus { background: #334155; border-radius: 8px 0 0 8px; color: var(--danger); }
-        .btn-plus { background: var(--primary); border-radius: 0 8px 8px 0; }
-        .val-box { background: #000; width: 35px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; }
-
-        .to-timer-overlay { font-family: monospace; font-size: 2.5rem; color: var(--danger); font-weight: 900; display: flex; align-items: center; justify-content: center; height: 4.5rem; }
-
-        .view { display: none; padding: 5px; }
+        .to-dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; }
+        .to-dot.active { background: var(--stellar-gold); }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 900; margin: 10px; width: calc(100% - 20px); }
+        .modal { background: #111; padding: 20px; border-radius: 15px; margin: 10px; border: 1px solid #334155; display: none; position: fixed; top: 20%; left: 5%; width: 80%; z-index: 3000; }
+        .view { display: none; padding: 10px; }
         .view.active { display: block; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #1e293b; border: 1px solid #334155; color: white; border-radius: 6px; box-sizing: border-box; }
+
+        .filter-bar { display: flex; gap: 5px; padding: 0 10px; margin-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
+        .filter-bar::-webkit-scrollbar { display: none; }
+        .filter-btn { background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 900; white-space: nowrap; cursor: pointer; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .match-stats-summary { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #475569; font-size: 0.65rem; color: #cbd5e1; }
+        .stat-line { margin-bottom: 4px; display: flex; gap: 5px; flex-wrap: wrap; }
+        .stat-label { font-weight: 900; color: var(--stellar-gold); text-transform: uppercase; min-width: 50px; }
     </style>
 </head>
 <body>
 
-    <div id="sos-modal">
-        <div class="sos-content">
-            <h2 style="color:var(--warning); margin-top:0">🚨 ¿QUÉ PASÓ?</h2>
-            <button class="sos-btn" style="background:var(--danger)" onclick="sendSOS('MÉDICA')">🚑 MÉDICA</button>
-            <button class="sos-btn" style="background:var(--primary)" onclick="sendSOS('AGUA')">💧 AGUA</button>
-            <button class="sos-btn" style="background:var(--success)" onclick="sendSOS('STAFF')">🙋 STAFF</button>
-            <button class="sos-btn" style="background:#fff" onclick="closeSOS()">CERRAR</button>
-        </div>
-    </div>
-
     <div id="mesa-header" class="header-mesa" style="display:none">
         <div class="score-grid">
-            <div class="to-wrapper">
-                <span id="nameA" class="team-name-big">TEAM A</span>
-                <div id="score-box-a">
-                    <div id="to-clock-a" class="to-timer-overlay" style="display:none">60s</div>
-                    <div id="scoreA" class="score-num">0</div>
-                </div>
-                <div id="to-dots-a" class="to-dots"></div>
-                <button onclick="confirmTO('a')" class="btn-to-action">TIME OUT</button>
+            <div>
+                <span id="h-name-a" class="team-name">-</span>
+                <div class="score-container"><div id="scoreA" class="score-num" style="color:var(--primary)">0</div></div>
+                <div id="to-dots-a" style="display:flex; gap:3px; justify-content:center; margin:8px 0"></div>
+                <button onclick="confirmTO('a')" style="width:100%; font-size:9px; padding:5px">TIME OUT</button>
             </div>
-
-            <div class="center-controls">
-                <div class="top-btns">
-                    <button onclick="openSOS()" class="btn-header" style="background:var(--warning)">SOS</button>
-                    <button onclick="confirmPause()" id="clk-btn" class="btn-header" style="background:var(--success)">PLAY</button>
-                </div>
-                <div id="timer" class="timer-big">90:00</div>
+            <div>
+                <button onclick="toggleClock()" id="clk-btn" style="background:var(--success); border:none; width:100%; padding:10px; border-radius:6px; font-weight:900; color:white">PLAY</button>
+                <div id="timer" style="font-family:monospace; font-size:1.8rem; color:#4ade80; font-weight:900; margin:5px 0">90:00</div>
+                <button onclick="triggerHalftime()" id="btn-ht" style="font-size:9px; width:100%; background:#fff; border:none; padding:4px; border-radius:4px; font-weight:900">MEDIO TIEMPO</button>
             </div>
-
-            <div class="to-wrapper">
-                <span id="nameB" class="team-name-big" style="color:var(--success)">TEAM B</span>
-                <div id="score-box-b">
-                    <div id="to-clock-b" class="to-timer-overlay" style="display:none">60s</div>
-                    <div id="scoreB" class="score-num">0</div>
-                </div>
-                <div id="to-dots-b" class="to-dots"></div>
-                <button onclick="confirmTO('b')" class="btn-to-action">TIME OUT</button>
+            <div>
+                <span id="h-name-b" class="team-name">-</span>
+                <div class="score-container"><div id="scoreB" class="score-num" style="color:var(--success)">0</div></div>
+                <div id="to-dots-b" style="display:flex; gap:3px; justify-content:center; margin:8px 0"></div>
+                <button onclick="confirmTO('b')" style="width:100%; font-size:9px; padding:5px">TIME OUT</button>
             </div>
         </div>
     </div>
 
-    <div id="view-tournament" class="view active">
-        <h3 style="text-align:center">🏆 PARTIDOS EN VIVO</h3>
-        <div id="match-list" style="padding:10px"></div>
-    </div>
+    <div id="view-fixture" class="view active">
+        <button class="btn-add" onclick="document.getElementById('modal-add').style.display='block'">+ NUEVO PARTIDO</button>
+        
+        <div class="filter-bar">
+            <div class="filter-btn active" onclick="setFilter('todos', this)">TODOS</div>
+            <div class="filter-btn" onclick="setFilter('en vivo', this)">EN VIVO</div>
+            <div class="filter-btn" onclick="setFilter('programado', this)">PROGRAMADOS</div>
+            <div class="filter-btn" onclick="setFilter('finalizado', this)">FINALIZADOS</div>
+        </div>
 
+        <div id="modal-add" class="modal">
+            <h3 style="margin-top:0">NUEVO PARTIDO</h3>
+            <input type="text" id="new-ea" placeholder="Nombre Equipo A">
+            <input type="text" id="new-eb" placeholder="Nombre Equipo B">
+            <button onclick="createMatch()" style="background:var(--success); width:100%; padding:12px; border:none; color:white; border-radius:6px; font-weight:900">CREAR</button>
+            <button onclick="document.getElementById('modal-add').style.display='none'" style="background:none; border:none; color:white; width:100%; margin-top:10px">CANCELAR</button>
+        </div>
+        <div id="match-list"></div>
+    </div>
+    
     <div id="view-sheet" class="view">
-        <div class="roster-container">
-            <div id="listA"></div>
-            <div id="listB"></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
+            <div id="listA"></div><div id="listB"></div>
         </div>
-        <button onclick="finishMatch()" style="width:100%; padding:20px; background:var(--danger); border:none; color:white; font-weight:bold; border-radius:12px; margin:20px 0; font-size:1rem">FINALIZAR JUEGO</button>
+        <button onclick="finishMatchProcess()" style="width:100%; margin-top:30px; padding:20px; background:var(--danger); color:white; border:none; border-radius:12px; font-weight:900">FINALIZAR Y CERRAR JUEGO</button>
+    </div>
+
+    <div id="view-standings" class="view"><h3>POSICIONES</h3><div id="standings-content"></div></div>
+    
+    <div id="view-ranking" class="view">
+        <h3>RANKING INDIVIDUAL</h3>
+        <div id="ranking-content"></div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" id="nav-fixture" onclick="showSection('fixture')"><span>📅 JUEGOS</span></div>
+        <div class="nav-item" id="nav-sheet" onclick="showSection('sheet')"><span>📋 MESA</span></div>
+        <div class="nav-item" onclick="showSection('standings')"><span>📊 TABLA</span></div>
+        <div class="nav-item" onclick="showSection('ranking')"><span>🏆 STATS</span></div>
     </div>
 
     <script>
-        const S_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co/rest/v1';
+        const S_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co/rest/v1'; 
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
-        const HEAD = { 'apikey': S_KEY, 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+        const HEAD = { 'apikey': S_KEY, 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' };
 
-        let currentMatch = null, clockInt, timeLeft = 5400, isRunning = false, playersData = [];
+        let currentMatch = null, clockInt, timeLeft = 5400, isRunning = false, playersData = [], currentSort = 'mvp';
+        let currentMatchFilter = 'todos';
 
-        function showView(v) {
-            document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
-            document.getElementById('view-' + v).classList.add('active');
-            document.getElementById('mesa-header').style.display = (v === 'sheet') ? 'block' : 'none';
-            if(v === 'tournament') loadMatches();
+        function showSection(sect) {
+            if(sect === 'sheet' && !currentMatch) return alert("Selecciona un partido.");
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + sect).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('mesa-header').style.display = (sect === 'sheet') ? 'block' : 'none';
+            if(sect === 'ranking') loadRanking(currentSort);
+            if(sect === 'fixture') loadMatches();
+            if(sect === 'standings') loadStandings();
+        }
+
+        function setFilter(status, btn) {
+            currentMatchFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadMatches();
+        }
+
+        async function createMatch() {
+            const ea = document.getElementById('new-ea').value;
+            const eb = document.getElementById('new-eb').value;
+            if(!ea || !eb) return alert("Faltan nombres");
+            await fetch(`${S_URL}/partidos`, { method: 'POST', headers: HEAD, body: JSON.stringify({ equipo_a: ea, equipo_b: eb, estado: 'programado', puntos_a: 0, puntos_b: 0, timeout_a: 2, timeout_b: 2 }) });
+            document.getElementById('modal-add').style.display='none';
+            loadMatches();
         }
 
         async function loadMatches() {
-            const res = await fetch(`${S_URL}/partidos?estado=neq.finalizado`, { headers: HEAD });
-            const data = await res.json();
-            document.getElementById('match-list').innerHTML = data.map(m => `
-                <div style="background:var(--card); padding:20px; border-radius:10px; margin-bottom:12px; border-left:6px solid var(--primary)" onclick="selectMatch(${m.id})">
-                    <b>${m.equipo_a} vs ${m.equipo_b}</b>
-                </div>
-            `).join('');
+            let url = `${S_URL}/partidos?order=id.asc`;
+            if (currentMatchFilter !== 'todos') url += `&estado=eq.${currentMatchFilter}`;
+            
+            const res = await fetch(url, { headers: HEAD });
+            const matches = await res.json();
+            
+            const resPlayers = await fetch(`${S_URL}/jugadores`, { headers: HEAD });
+            const allPlayers = await resPlayers.json();
+
+            document.getElementById('match-list').innerHTML = matches.map(m => {
+                const isFin = m.estado === 'finalizado';
+                const isLive = m.estado === 'en vivo';
+                let accentColor = isFin ? 'var(--danger)' : (isLive ? 'var(--primary)' : '#475569');
+
+                let statsHtml = "";
+                if(isFin) {
+                    const matchPlayers = allPlayers.filter(p => p.equipo === m.equipo_a || p.equipo === m.equipo_b);
+                    const sc = matchPlayers.filter(p => p.goles > 0).map(p => `${p.nombre}(${p.goles})`).join(', ');
+                    const as = matchPlayers.filter(p => p.asistencias > 0).map(p => `${p.nombre}(${p.asistencias})`).join(', ');
+                    const df = matchPlayers.filter(p => p.defensas > 0).map(p => `${p.nombre}(${p.defensas})`).join(', ');
+                    statsHtml = `<div class="match-stats-summary">
+                        ${sc ? `<div class="stat-line"><span class="stat-label">G:</span> ${sc}</div>` : ''}
+                        ${as ? `<div class="stat-line"><span class="stat-label">A:</span> ${as}</div>` : ''}
+                        ${df ? `<div class="stat-line"><span class="stat-label">D:</span> ${df}</div>` : ''}
+                    </div>`;
+                }
+
+                return `<div class="match-card" style="border-left-color: ${accentColor}">
+                    <span class="status-badge" style="color:white; background:${accentColor}">${m.estado.toUpperCase()}</span>
+                    <div style="font-weight:900">${m.equipo_a} vs ${m.equipo_b}</div>
+                    <div style="font-size:1.4rem; font-weight:900; margin:10px 0">${m.puntos_a||0} - ${m.puntos_b||0}</div>
+                    <button onclick="selectMatch(${m.id})" style="width:100%; background:${isFin?'#334155':'var(--primary)'}; border:none; color:white; padding:10px; border-radius:6px; font-weight:900">
+                        ${isFin ? 'EDITAR ESTADÍSTICAS' : 'PLANILLAR'}
+                    </button>
+                    ${statsHtml}
+                </div>`;
+            }).join('');
         }
 
         async function selectMatch(id) {
             const res = await fetch(`${S_URL}/partidos?id=eq.${id}`, { headers: HEAD });
             currentMatch = (await res.json())[0];
-            document.getElementById('nameA').innerText = currentMatch.equipo_a;
-            document.getElementById('nameB').innerText = currentMatch.equipo_b;
+            
+            if (currentMatch.estado === 'programado') {
+                currentMatch.estado = 'en vivo';
+                await fetch(`${S_URL}/partidos?id=eq.${id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ estado: 'en vivo' }) });
+            }
+
+            clearInterval(clockInt); isRunning = false; timeLeft = 5400;
+            document.getElementById('scoreA').innerText = currentMatch.puntos_a || 0;
+            document.getElementById('scoreB').innerText = currentMatch.puntos_b || 0;
+            document.getElementById('h-name-a').innerText = currentMatch.equipo_a;
+            document.getElementById('h-name-b').innerText = currentMatch.equipo_b;
             updateTOVisuals();
-            await loadPlayers();
-            showView('sheet');
+            await loadPlayers(); // Cargará los jugadores con sus puntos actuales
+            showSection('sheet');
+        }
+
+        function toggleClock() {
+            isRunning = !isRunning; const btn = document.getElementById('clk-btn');
+            if(isRunning) {
+                btn.innerText="PAUSA"; btn.style.background="var(--danger)";
+                clockInt = setInterval(() => { timeLeft--; updateTimerUI(); }, 1000);
+            } else { btn.innerText="PLAY"; btn.style.background="var(--success)"; clearInterval(clockInt); }
+        }
+        function updateTimerUI() {
+            let m=Math.floor(timeLeft/60), s=timeLeft%60;
+            document.getElementById('timer').innerText=`${m}:${s.toString().padStart(2,'0')}`;
+        }
+        function triggerHalftime() {
+            if(!confirm("¿Iniciar Medio Tiempo (5 min)?")) return;
+            if(isRunning) toggleClock();
+            let ht = 300; const btn = document.getElementById('btn-ht');
+            btn.innerText = "DESCANSO"; btn.style.background = "var(--warning)";
+            const htInt = setInterval(() => {
+                ht--; let m=Math.floor(ht/60), s=ht%60;
+                document.getElementById('timer').innerText=`${m}:${s.toString().padStart(2,'0')}`;
+                if(ht <= 0) { clearInterval(htInt); btn.innerText = "MEDIO TIEMPO"; btn.style.background="#fff"; alert("¡Fin del descanso!"); }
+            }, 1000);
+        }
+
+        function confirmTO(side) {
+            if(currentMatch['timeout_'+side] <= 0) return alert("Sin Time Outs");
+            if(!confirm("¿Usar Time Out?")) return;
+            currentMatch['timeout_'+side]--;
+            updateTOVisuals();
+            fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ ['timeout_'+side]: currentMatch['timeout_'+side] }) });
+        }
+        function updateTOVisuals() {
+            ['a','b'].forEach(t => {
+                let h = ''; for(let i=1; i<=2; i++) h += `<div class="to-dot ${i<=currentMatch['timeout_'+t]?'active':''}"></div>`;
+                document.getElementById('to-dots-'+t).innerHTML = h;
+            });
         }
 
         async function loadPlayers() {
             const res = await fetch(`${S_URL}/jugadores?or=(equipo.eq."${currentMatch.equipo_a}",equipo.eq."${currentMatch.equipo_b}")&order=numero.asc`, { headers: HEAD });
-            playersData = await res.json();
-            renderRosters();
-            calculateTeamScores();
+            playersData = await res.json(); renderRosters();
         }
 
         function renderRosters() {
-            const lA = document.getElementById('listA'), lB = document.getElementById('listB');
-            lA.innerHTML = ''; lB.innerHTML = '';
-            playersData.forEach(j => {
-                const isTeamA = j.equipo === currentMatch.equipo_a;
-                const html = `
-                    <div class="player-item" style="border-left-color:${isTeamA?'var(--primary)':'var(--success)'}">
-                        <div class="player-header" onclick="tryOpenDrawer(${j.id})">
-                            <span>#${j.numero} ${j.nombre.split(' ')[0]}</span>
-                            <span class="p-stats-summary">${j.goles||0}/${j.asistencias||0}/${j.defensas||0}</span>
-                        </div>
-                        <div id="drawer-${j.id}" class="action-drawer">
-                            ${renderStatRow(j.id, 'goles', j.goles, 'GOL')}
-                            ${renderStatRow(j.id, 'asistencias', j.asistencias, 'AST')}
-                            ${renderStatRow(j.id, 'defensas', j.defensas, 'DEF')}
-                        </div>
-                    </div>`;
-                isTeamA ? lA.innerHTML += html : lB.innerHTML += html;
-            });
+            const draw = (t, isA) => playersData.filter(p => p.equipo === t).map(j => `
+                <div style="background:var(--card); border-radius:8px; margin-bottom:5px; border-left:4px solid ${isA?'var(--primary)':'var(--success)'}">
+                    <div style="padding:10px; font-weight:900; font-size:0.75rem" onclick="toggleD(${j.id})">#${j.numero} ${j.nombre} <span style="float:right; color:var(--stellar-gold)">${j.goles||0}G / ${j.asistencias||0}A / ${j.defensas||0}D</span></div>
+                    <div id="d-${j.id}" style="display:none; padding:10px">
+                        ${statRow(j.id, 'goles', j.goles, 'GOLES', isA)}
+                        ${statRow(j.id, 'asistencias', j.asistencias, 'ASIST', isA)}
+                        ${statRow(j.id, 'defensas', j.defensas, 'DEF', isA)}
+                    </div>
+                </div>`).join('');
+            document.getElementById('listA').innerHTML = draw(currentMatch.equipo_a, true);
+            document.getElementById('listB').innerHTML = draw(currentMatch.equipo_b, false);
         }
 
-        function renderStatRow(id, type, val, label) {
-            return `<div class="stat-group">
-                <span style="font-size:0.6rem; font-weight:bold">${label}</span>
-                <div class="btn-wrap">
-                    <button class="btn-op btn-minus" onclick="modStat(${id},'${type}',-1)">-</button>
-                    <div class="val-box">${val||0}</div>
-                    <button class="btn-op btn-plus" onclick="modStat(${id},'${type}',1)">+</button>
+        function statRow(id, type, val, label, isA) {
+            return `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px">
+                <span style="font-size:9px; font-weight:900">${label}</span>
+                <div style="display:flex; gap:3px">
+                    <button style="width:35px; height:35px; background:#334155; border:none; color:white" onclick="modStat(${id},'${type}',-1)">-</button>
+                    <div style="width:25px; text-align:center; font-weight:900">${val||0}</div>
+                    <button style="width:35px; height:35px; background:${isA?'var(--primary)':'var(--success)'}; border:none; color:white" onclick="modStat(${id},'${type}',1)">+</button>
                 </div>
             </div>`;
         }
 
-        function tryOpenDrawer(id) {
-            if (!isRunning) { alert("¡Dále al PLAY primero para anotar!"); return; }
-            const d = document.getElementById('drawer-'+id);
-            const isVisible = d.style.display === 'block';
-            document.querySelectorAll('.action-drawer').forEach(x => x.style.display = 'none');
-            d.style.display = isVisible ? 'none' : 'block';
-        }
-
         async function modStat(pId, type, delta) {
+            // Permitimos editar si el partido está en vivo O finalizado (para corregir errores)
+            if(!isRunning && currentMatch.estado === 'en vivo') return alert("PULSA PLAY PARA REGISTRAR");
+            
             const p = playersData.find(x => x.id === pId);
-            const newVal = Math.max(0, (p[type] || 0) + delta);
-            if (p[type] === newVal) return;
-            p[type] = newVal;
+            p[type] = Math.max(0, (p[type] || 0) + delta);
             renderRosters();
-            document.getElementById('drawer-'+pId).style.display = 'none';
-            await fetch(`${S_URL}/jugadores?id=eq.${pId}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [type]: newVal }) });
-            if(type === 'goles') calculateTeamScores();
-        }
-
-        function calculateTeamScores() {
-            const sA = playersData.filter(p => p.equipo === currentMatch.equipo_a).reduce((sum, p) => sum + (p.goles||0), 0);
-            const sB = playersData.filter(p => p.equipo === currentMatch.equipo_b).reduce((sum, p) => sum + (p.goles||0), 0);
-            document.getElementById('scoreA').innerText = sA;
-            document.getElementById('scoreB').innerText = sB;
-            fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ puntos_a: sA, puntos_b: sB }) });
-        }
-
-        function updateTOVisuals() {
-            const d = (team, val) => {
-                let h = ''; for(let i=1; i<=2; i++) h += `<div class="to-dot ${i <= val ? 'active' : ''}"></div>`;
-                document.getElementById('to-dots-'+team).innerHTML = h;
-            };
-            d('a', currentMatch.timeout_a ?? 2); d('b', currentMatch.timeout_b ?? 2);
-        }
-
-        function confirmTO(team) {
-            const key = 'timeout_' + team;
-            if((currentMatch[key] || 0) <= 0) return alert("¡No quedan más tiempos muertos!");
-            if(confirm("¿Sale ese Time-Out?")) {
-                currentMatch[key]--; updateTOVisuals();
-                fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [key]: currentMatch[key] }) });
-                const clk = document.getElementById('to-clock-'+team), sc = document.getElementById('score'+team.toUpperCase());
-                sc.style.display = 'none'; clk.style.display = 'flex';
-                let t = 60; const i = setInterval(() => { t--; clk.innerText = t + "s"; if(t <= 0) { clearInterval(i); clk.style.display='none'; sc.style.display='block'; }}, 1000);
+            
+            await fetch(`${S_URL}/jugadores?id=eq.${pId}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [type]: p[type] }) });
+            
+            if(type === 'goles') {
+                const sA = playersData.filter(x => x.equipo === currentMatch.equipo_a).reduce((s,x)=>s+(x.goles||0),0);
+                const sB = playersData.filter(x => x.equipo === currentMatch.equipo_b).reduce((s,x)=>s+(x.goles||0),0);
+                document.getElementById('scoreA').innerText = sA; document.getElementById('scoreB').innerText = sB;
+                await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ puntos_a: sA, puntos_b: sB }) });
             }
         }
 
-        function confirmPause() { 
-            if(isRunning) { if(confirm("¿Se para el reloj?")) toggleClock(); } 
-            else toggleClock(); 
-        }
-        
-        function toggleClock() {
-            isRunning = !isRunning;
-            const btn = document.getElementById('clk-btn');
-            if(isRunning) {
-                btn.innerText = "PAUSA"; btn.style.background = "var(--danger)";
-                clockInt = setInterval(() => { 
-                    timeLeft--; 
-                    const m = Math.floor(timeLeft/60), s = timeLeft%60; 
-                    document.getElementById('timer').innerText = `${m}:${s.toString().padStart(2,'0')}`; 
-                }, 1000);
-            } else { 
-                btn.innerText = "PLAY"; btn.style.background = "var(--success)"; 
-                clearInterval(clockInt); 
+        async function finishMatchProcess() {
+            if(!confirm("¿Cerrar partido y actualizar estadísticas generales?")) return;
+            const sA = parseInt(document.getElementById('scoreA').innerText);
+            const sB = parseInt(document.getElementById('scoreB').innerText);
+            
+            await syncTeam(currentMatch.equipo_a, sA, sB);
+            await syncTeam(currentMatch.equipo_b, sB, sA);
+            
+            for (let p of playersData) {
+                if (p.goles > 0 || p.asistencias > 0 || p.defensas > 0) {
+                    await syncRanking(p);
+                }
             }
+            
+            await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ estado: 'finalizado', puntos_a: sA, puntos_b: sB }) });
+            currentMatch = null; alert("Partido guardado."); showSection('fixture');
         }
 
-        // SOS LOGIC
-        function openSOS() { document.getElementById('sos-modal').style.display = 'flex'; }
-        function closeSOS() { document.getElementById('sos-modal').style.display = 'none'; }
-        function sendSOS(tipo) {
-            alert("🚨 Solicitud de " + tipo + " enviada a la central.");
-            closeSOS();
+        async function syncTeam(eq, f, c) {
+            const res = await fetch(`${S_URL}/clasificacion_equipos?nombre_equipo=eq.${eq}`, { headers: HEAD });
+            const d = await res.json();
+            const body = { nombre_equipo: eq, pj: (d[0]?.pj || 0)+1, pg: (d[0]?.pg || 0)+(f>c?1:0), pp: (d[0]?.pp || 0)+(f<c?1:0), gf: (d[0]?.gf || 0)+f, gc: (d[0]?.gc || 0)+c, dg: ((d[0]?.gf||0)+f)-((d[0]?.gc||0)+c), puntos: (d[0]?.pg || 0)+(f>c?1:0) };
+            await fetch(`${S_URL}/clasificacion_equipos`, { method: 'POST', headers: HEAD, body: JSON.stringify(body) });
+        }
+        async function syncRanking(p) {
+            const res = await fetch(`${S_URL}/estadisticas_totales?nombre_jugador=eq.${p.nombre}`, { headers: HEAD });
+            const h = await res.json();
+            const body = { nombre_jugador: p.nombre, equipo_jugador: p.equipo, goles_totales: (h[0]?.goles_totales||0)+p.goles, asistencias_totales: (h[0]?.asistencias_totales||0)+p.asistencias, defensas_totales: (h[0]?.defensas_totales||0)+p.defensas };
+            await fetch(`${S_URL}/estadisticas_totales`, { method: 'POST', headers: HEAD, body: JSON.stringify(body) });
         }
 
-        async function finishMatch() { 
-            if(confirm("¿Cerramos el partido definitivamente, jefe?")) { 
-                await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ estado: 'finalizado' }) }); 
-                location.reload(); 
-            }
+        async function loadRanking(sortBy = 'mvp') {
+            currentSort = sortBy;
+            const res = await fetch(`${S_URL}/estadisticas_totales`, { headers: HEAD });
+            let data = await res.json();
+            data = data.map(p => ({...p, mvp: (p.goles_totales||0)+(p.asistencias_totales||0)}));
+            data.sort((a,b) => (b[sortBy]||0) - (a[sortBy]||0));
+            document.getElementById('ranking-content').innerHTML = `
+                <table class="data-table">
+                    <tr><th class="txt-left">JUGADOR</th><th class="txt-left">EQUIPO</th><th onclick="loadRanking('goles_totales')">G</th><th onclick="loadRanking('asistencias_totales')">A</th><th onclick="loadRanking('defensas_totales')">D</th><th onclick="loadRanking('mvp')" style="color:var(--stellar-gold)">MVP</th></tr>
+                    ${data.map(p => `<tr><td class="txt-left">${p.nombre_jugador}</td><td class="txt-left" style="color:#94a3b8">${p.equipo_jugador}</td><td>${p.goles_totales}</td><td>${p.asistencias_totales}</td><td>${p.defensas_totales||0}</td><td style="font-weight:900; color:var(--stellar-gold)">${p.mvp}</td></tr>`).join('')}
+                </table>`;
         }
 
+        async function loadStandings() {
+            const res = await fetch(`${S_URL}/clasificacion_equipos?order=puntos.desc,dg.desc`, { headers: HEAD });
+            const data = await res.json();
+            document.getElementById('standings-content').innerHTML = `
+                <table class="data-table">
+                    <tr><th class="txt-left">EQUIPO</th><th>PJ</th><th>PG</th><th>GF</th><th>GC</th><th>DG</th><th>PTS</th></tr>
+                    ${data.map(e => `<tr><td class="txt-left">${e.nombre_equipo}</td><td>${e.pj}</td><td>${e.pg}</td><td>${e.gf}</td><td>${e.gc}</td><td>${e.dg}</td><td style="font-weight:900; color:var(--primary)">${e.puntos}</td></tr>`).join('')}
+                </table>`;
+        }
+
+        function toggleD(id) { const d=document.getElementById('d-'+id); d.style.display = d.style.display==='none'?'block':'none'; }
         loadMatches();
     </script>
 </body>
