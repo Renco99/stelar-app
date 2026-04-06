@@ -2,108 +2,269 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIDELINE MVP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIDELINE PRO - Elite Control</title>
     <style>
-        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; --success: #39FF14; }
-        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
+        :root { --primary: #3b82f6; --bg: #020617; --card: #1e293b; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --stellar-gold: #fbbf24; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; touch-action: manipulation; }
         
-        /* Estilo de las tarjetas para que RESALTEN */
-        .match-card {
-            background: var(--card);
-            border-left: 5px solid var(--primary);
-            padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-        }
+        .header-mesa { background: #000; padding: 15px 10px; border-bottom: 3px solid var(--primary); position: sticky; top:0; z-index:100; }
+        .score-grid { display: grid; grid-template-columns: 1fr 1.5fr 1fr; align-items: stretch; text-align: center; gap: 5px; }
+        .score-num { font-size: 4rem; font-weight: 900; line-height: 0.9; margin: 5px 0; }
+        .team-name-big { font-size: 0.9rem; font-weight: 900; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* T.O. SECTION */
+        .to-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .to-dots { display: flex; gap: 5px; margin-bottom: 6px; }
+        .to-dot { width: 12px; height: 12px; border-radius: 50%; background: #334155; border: 1px solid #475569; }
+        .to-dot.active { background: var(--stellar-gold); box-shadow: 0 0 8px var(--stellar-gold); border: none; }
+        .btn-to-action { background: #1e293b; border: 1px solid #334155; color: white; font-size: 0.6rem; padding: 8px 0; border-radius: 4px; font-weight: bold; width: 90%; }
+
+        /* CENTER UNIT */
+        .center-controls { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 5px; }
+        .top-btns { display: flex; gap: 4px; width: 100%; justify-content: center; margin-bottom: 10px; }
+        .btn-header { flex: 1; max-width: 70px; padding: 10px 0; border: none; border-radius: 4px; font-weight: 900; font-size: 0.7rem; color: black; text-transform: uppercase; }
+        .timer-big { font-family: 'Courier New', monospace; font-size: 4.5rem; color: #4ade80; font-weight: 900; line-height: 0.8; letter-spacing: -3px; margin: 10px 0; }
+
+        /* MODAL SOS CUSTOM */
+        #sos-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center; }
+        .sos-content { background:var(--card); padding:20px; border-radius:15px; width:80%; text-align:center; border: 2px solid var(--warning); }
+        .sos-btn { width:100%; padding:15px; margin:10px 0; border:none; border-radius:10px; font-weight:900; font-size:1.1rem; color:black; }
+
+        /* ROSTERS */
+        .roster-container { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; align-items: start; }
+        .player-item { background: var(--card); border-radius: 6px; margin-bottom: 6px; overflow: hidden; border-left: 4px solid var(--primary); }
+        .player-header { padding: 14px 10px; font-weight: bold; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+        .p-stats-summary { font-size: 0.75rem; color: var(--stellar-gold); font-family: monospace; font-weight: 900; background: rgba(0,0,0,0.4); padding: 3px 6px; border-radius: 4px; }
         
-        .header { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
-        .btn-refresh { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 5px; width: 100%; cursor: pointer; margin-bottom: 20px; }
-        
-        /* Consola de errores visible en pantalla */
-        #debug-console { 
-            background: #000; color: #39FF14; font-family: monospace; 
-            font-size: 10px; padding: 10px; border-radius: 5px; 
-            margin-top: 20px; max-height: 150px; overflow-y: auto;
-        }
+        .action-drawer { display: none; background: rgba(0,0,0,0.6); padding: 15px 10px; border-top: 1px solid #334155; }
+        .stat-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .btn-wrap { display: flex; gap: 2px; }
+        .btn-op { width: 45px; height: 45px; border: none; color: white; font-weight: bold; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
+        .btn-minus { background: #334155; border-radius: 8px 0 0 8px; color: var(--danger); }
+        .btn-plus { background: var(--primary); border-radius: 0 8px 8px 0; }
+        .val-box { background: #000; width: 35px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; }
+
+        .to-timer-overlay { font-family: monospace; font-size: 2.5rem; color: var(--danger); font-weight: 900; display: flex; align-items: center; justify-content: center; height: 4.5rem; }
+
+        .view { display: none; padding: 5px; }
+        .view.active { display: block; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>SIDELINE 🏆</h1>
-        <p id="status-text">Estado: Iniciando...</p>
+    <div id="sos-modal">
+        <div class="sos-content">
+            <h2 style="color:var(--warning); margin-top:0">🚨 ¿QUÉ PASÓ?</h2>
+            <button class="sos-btn" style="background:var(--danger)" onclick="sendSOS('MÉDICA')">🚑 MÉDICA</button>
+            <button class="sos-btn" style="background:var(--primary)" onclick="sendSOS('AGUA')">💧 AGUA</button>
+            <button class="sos-btn" style="background:var(--success)" onclick="sendSOS('STAFF')">🙋 STAFF</button>
+            <button class="sos-btn" style="background:#fff" onclick="closeSOS()">CERRAR</button>
+        </div>
     </div>
 
-    <button class="btn-refresh" onclick="loadMatches()">🔄 FORZAR CARGA DE DATOS</button>
+    <div id="mesa-header" class="header-mesa" style="display:none">
+        <div class="score-grid">
+            <div class="to-wrapper">
+                <span id="nameA" class="team-name-big">TEAM A</span>
+                <div id="score-box-a">
+                    <div id="to-clock-a" class="to-timer-overlay" style="display:none">60s</div>
+                    <div id="scoreA" class="score-num">0</div>
+                </div>
+                <div id="to-dots-a" class="to-dots"></div>
+                <button onclick="confirmTO('a')" class="btn-to-action">TIME OUT</button>
+            </div>
 
-    <div id="match-list">
-        <p style="opacity: 0.5">Esperando datos de Supabase...</p>
+            <div class="center-controls">
+                <div class="top-btns">
+                    <button onclick="openSOS()" class="btn-header" style="background:var(--warning)">SOS</button>
+                    <button onclick="confirmPause()" id="clk-btn" class="btn-header" style="background:var(--success)">PLAY</button>
+                </div>
+                <div id="timer" class="timer-big">90:00</div>
+            </div>
+
+            <div class="to-wrapper">
+                <span id="nameB" class="team-name-big" style="color:var(--success)">TEAM B</span>
+                <div id="score-box-b">
+                    <div id="to-clock-b" class="to-timer-overlay" style="display:none">60s</div>
+                    <div id="scoreB" class="score-num">0</div>
+                </div>
+                <div id="to-dots-b" class="to-dots"></div>
+                <button onclick="confirmTO('b')" class="btn-to-action">TIME OUT</button>
+            </div>
+        </div>
     </div>
 
-    <div id="debug-console">
-        <div>> Sistema listo.</div>
+    <div id="view-tournament" class="view active">
+        <h3 style="text-align:center">🏆 PARTIDOS EN VIVO</h3>
+        <div id="match-list" style="padding:10px"></div>
+    </div>
+
+    <div id="view-sheet" class="view">
+        <div class="roster-container">
+            <div id="listA"></div>
+            <div id="listB"></div>
+        </div>
+        <button onclick="finishMatch()" style="width:100%; padding:20px; background:var(--danger); border:none; color:white; font-weight:bold; border-radius:12px; margin:20px 0; font-size:1rem">FINALIZAR JUEGO</button>
     </div>
 
     <script>
-        // CONFIGURACIÓN (Tus credenciales directas)
         const S_URL = 'https://bzgsplkbmygagsmmcqql.supabase.co/rest/v1';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6Z3NwbGtibXlnYWdzbW1jcXFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDE2ODEsImV4cCI6MjA5MDgxNzY4MX0.qfbA2U9RX3Yl7En_GcgEaronUuMHKuJ81PcL550UPzI';
-        
-        const log = (msg) => {
-            const consoleDiv = document.getElementById('debug-console');
-            consoleDiv.innerHTML += `<div>> ${msg}</div>`;
-            consoleDiv.scrollTop = consoleDiv.scrollHeight;
-        };
+        const HEAD = { 'apikey': S_KEY, 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+        let currentMatch = null, clockInt, timeLeft = 5400, isRunning = false, playersData = [];
+
+        function showView(v) {
+            document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+            document.getElementById('view-' + v).classList.add('active');
+            document.getElementById('mesa-header').style.display = (v === 'sheet') ? 'block' : 'none';
+            if(v === 'tournament') loadMatches();
+        }
 
         async function loadMatches() {
-            log("Intentando conectar a Supabase...");
-            document.getElementById('status-text').innerText = "Estado: Conectando...";
-            
-            const list = document.getElementById('match-list');
-            
-            try {
-                const response = await fetch(`${S_URL}/partidos?select=*`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': S_KEY,
-                        'Authorization': `Bearer ${S_KEY}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+            const res = await fetch(`${S_URL}/partidos?estado=neq.finalizado`, { headers: HEAD });
+            const data = await res.json();
+            document.getElementById('match-list').innerHTML = data.map(m => `
+                <div style="background:var(--card); padding:20px; border-radius:10px; margin-bottom:12px; border-left:6px solid var(--primary)" onclick="selectMatch(${m.id})">
+                    <b>${m.equipo_a} vs ${m.equipo_b}</b>
+                </div>
+            `).join('');
+        }
 
-                log(`Respuesta recibida: ${response.status}`);
+        async function selectMatch(id) {
+            const res = await fetch(`${S_URL}/partidos?id=eq.${id}`, { headers: HEAD });
+            currentMatch = (await res.json())[0];
+            document.getElementById('nameA').innerText = currentMatch.equipo_a;
+            document.getElementById('nameB').innerText = currentMatch.equipo_b;
+            updateTOVisuals();
+            await loadPlayers();
+            showView('sheet');
+        }
 
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
+        async function loadPlayers() {
+            const res = await fetch(`${S_URL}/jugadores?or=(equipo.eq."${currentMatch.equipo_a}",equipo.eq."${currentMatch.equipo_b}")&order=numero.asc`, { headers: HEAD });
+            playersData = await res.json();
+            renderRosters();
+            calculateTeamScores();
+        }
 
-                const data = await response.json();
-                log(`Partidos encontrados: ${data.length}`);
-
-                if (data.length === 0) {
-                    list.innerHTML = "<p>No hay partidos en la base de datos. (¿Activaste el RLS en Supabase?)</p>";
-                    document.getElementById('status-text').innerText = "Estado: Sin datos";
-                } else {
-                    list.innerHTML = data.map(m => `
-                        <div class="match-card">
-                            <b style="font-size: 1.2rem">${m.equipo_a} vs ${m.equipo_b}</b><br>
-                            <span style="color: #fbbf24">🕒 ${m.horario || '--:--'}</span>
+        function renderRosters() {
+            const lA = document.getElementById('listA'), lB = document.getElementById('listB');
+            lA.innerHTML = ''; lB.innerHTML = '';
+            playersData.forEach(j => {
+                const isTeamA = j.equipo === currentMatch.equipo_a;
+                const html = `
+                    <div class="player-item" style="border-left-color:${isTeamA?'var(--primary)':'var(--success)'}">
+                        <div class="player-header" onclick="tryOpenDrawer(${j.id})">
+                            <span>#${j.numero} ${j.nombre.split(' ')[0]}</span>
+                            <span class="p-stats-summary">${j.goles||0}/${j.asistencias||0}/${j.defensas||0}</span>
                         </div>
-                    `).join('');
-                    document.getElementById('status-text').innerText = "Estado: Datos cargados";
-                }
+                        <div id="drawer-${j.id}" class="action-drawer">
+                            ${renderStatRow(j.id, 'goles', j.goles, 'GOL')}
+                            ${renderStatRow(j.id, 'asistencias', j.asistencias, 'AST')}
+                            ${renderStatRow(j.id, 'defensas', j.defensas, 'DEF')}
+                        </div>
+                    </div>`;
+                isTeamA ? lA.innerHTML += html : lB.innerHTML += html;
+            });
+        }
 
-            } catch (error) {
-                log(`ERROR: ${error.message}`);
-                document.getElementById('status-text').innerText = "Estado: Error de conexión";
-                list.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
+        function renderStatRow(id, type, val, label) {
+            return `<div class="stat-group">
+                <span style="font-size:0.6rem; font-weight:bold">${label}</span>
+                <div class="btn-wrap">
+                    <button class="btn-op btn-minus" onclick="modStat(${id},'${type}',-1)">-</button>
+                    <div class="val-box">${val||0}</div>
+                    <button class="btn-op btn-plus" onclick="modStat(${id},'${type}',1)">+</button>
+                </div>
+            </div>`;
+        }
+
+        function tryOpenDrawer(id) {
+            if (!isRunning) { alert("¡Dále al PLAY primero para anotar!"); return; }
+            const d = document.getElementById('drawer-'+id);
+            const isVisible = d.style.display === 'block';
+            document.querySelectorAll('.action-drawer').forEach(x => x.style.display = 'none');
+            d.style.display = isVisible ? 'none' : 'block';
+        }
+
+        async function modStat(pId, type, delta) {
+            const p = playersData.find(x => x.id === pId);
+            const newVal = Math.max(0, (p[type] || 0) + delta);
+            if (p[type] === newVal) return;
+            p[type] = newVal;
+            renderRosters();
+            document.getElementById('drawer-'+pId).style.display = 'none';
+            await fetch(`${S_URL}/jugadores?id=eq.${pId}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [type]: newVal }) });
+            if(type === 'goles') calculateTeamScores();
+        }
+
+        function calculateTeamScores() {
+            const sA = playersData.filter(p => p.equipo === currentMatch.equipo_a).reduce((sum, p) => sum + (p.goles||0), 0);
+            const sB = playersData.filter(p => p.equipo === currentMatch.equipo_b).reduce((sum, p) => sum + (p.goles||0), 0);
+            document.getElementById('scoreA').innerText = sA;
+            document.getElementById('scoreB').innerText = sB;
+            fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ puntos_a: sA, puntos_b: sB }) });
+        }
+
+        function updateTOVisuals() {
+            const d = (team, val) => {
+                let h = ''; for(let i=1; i<=2; i++) h += `<div class="to-dot ${i <= val ? 'active' : ''}"></div>`;
+                document.getElementById('to-dots-'+team).innerHTML = h;
+            };
+            d('a', currentMatch.timeout_a ?? 2); d('b', currentMatch.timeout_b ?? 2);
+        }
+
+        function confirmTO(team) {
+            const key = 'timeout_' + team;
+            if((currentMatch[key] || 0) <= 0) return alert("¡No quedan más tiempos muertos!");
+            if(confirm("¿Sale ese Time-Out?")) {
+                currentMatch[key]--; updateTOVisuals();
+                fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ [key]: currentMatch[key] }) });
+                const clk = document.getElementById('to-clock-'+team), sc = document.getElementById('score'+team.toUpperCase());
+                sc.style.display = 'none'; clk.style.display = 'flex';
+                let t = 60; const i = setInterval(() => { t--; clk.innerText = t + "s"; if(t <= 0) { clearInterval(i); clk.style.display='none'; sc.style.display='block'; }}, 1000);
             }
         }
 
-        // Ejecutar carga al iniciar
-        window.onload = loadMatches;
+        function confirmPause() { 
+            if(isRunning) { if(confirm("¿Se para el reloj?")) toggleClock(); } 
+            else toggleClock(); 
+        }
+        
+        function toggleClock() {
+            isRunning = !isRunning;
+            const btn = document.getElementById('clk-btn');
+            if(isRunning) {
+                btn.innerText = "PAUSA"; btn.style.background = "var(--danger)";
+                clockInt = setInterval(() => { 
+                    timeLeft--; 
+                    const m = Math.floor(timeLeft/60), s = timeLeft%60; 
+                    document.getElementById('timer').innerText = `${m}:${s.toString().padStart(2,'0')}`; 
+                }, 1000);
+            } else { 
+                btn.innerText = "PLAY"; btn.style.background = "var(--success)"; 
+                clearInterval(clockInt); 
+            }
+        }
+
+        // SOS LOGIC
+        function openSOS() { document.getElementById('sos-modal').style.display = 'flex'; }
+        function closeSOS() { document.getElementById('sos-modal').style.display = 'none'; }
+        function sendSOS(tipo) {
+            alert("🚨 Solicitud de " + tipo + " enviada a la central.");
+            closeSOS();
+        }
+
+        async function finishMatch() { 
+            if(confirm("¿Cerramos el partido definitivamente, jefe?")) { 
+                await fetch(`${S_URL}/partidos?id=eq.${currentMatch.id}`, { method: 'PATCH', headers: HEAD, body: JSON.stringify({ estado: 'finalizado' }) }); 
+                location.reload(); 
+            }
+        }
+
+        loadMatches();
     </script>
 </body>
 </html>
